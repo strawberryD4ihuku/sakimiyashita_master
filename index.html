@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宮下Fun!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Boogaloo&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════
+   DESIGN TOKENS — POP × Y2K
+════════════════════════════════════ */
+:root {
+  --pink:     #e85b99;
+  --pink-lt:  #f5c0d8;
+  --sky:      #2fa8d8;
+  --sky-lt:   #cce9f7;
+  --yellow:   #f0c430;
+  --yellow-lt:#fdf3c0;
+  --mint:     #28c98a;
+  --mint-lt:  #c0f0df;
+  --purple:   #7a44bb;
+  --orange:   #e07838;
+  --white:    #ffffff;
+  --bg:       #faf8fc;
+  --ink:      #1e1030;
+  --ink2:     #4a3566;
+
+  --border: 2px solid var(--ink);
+  --shadow-s: 3px 3px 0 var(--ink);
+  --shadow-m: 4px 4px 0 var(--ink);
+  --shadow-l: 6px 6px 0 var(--ink);
+  --radius: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Zen Maru Gothic', sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── ドット背景 ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(var(--pink-lt) 1.2px, transparent 1.2px);
+  background-size: 32px 32px;
+  opacity: 0.28;
+}
+
+/* ════════ NAV ════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  height: 58px;
+  background: var(--pink);
+  border-bottom: var(--border);
+  box-shadow: 0 4px 0 var(--ink);
+}
+.nav-logo {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1.25rem;
+  color: var(--white);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  font-weight: 900;
+}
+.nav-logo span { color: var(--yellow); font-family: 'Boogaloo', cursive; font-size: 1.35rem; }
+.nav-links { display: flex; gap: 0.4rem; list-style: none; }
+.nav-links a {
+  display: block;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.78rem; font-weight: 700;
+  background: var(--white); color: var(--ink);
+  border-radius: 20px;
+  border: 2.5px solid var(--ink);
+  box-shadow: var(--shadow-s);
+  text-decoration: none;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+}
+.nav-links a:hover {
+  background: var(--yellow);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+/* ════════ HERO ════════ */
+#hero {
+  min-height: 100vh;
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 8rem 2rem 5rem;
+  overflow: hidden;
+  background: linear-gradient(150deg, #ffe4f3 0%, #e5f5ff 45%, #fffbd0 100%);
+}
+
+/* 浮遊デコ */
+.deco {
+  position: absolute; pointer-events: none;
+  font-size: 2.6rem;
+  animation: float var(--dur, 4s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  user-select: none;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0) rotate(var(--r0,-5deg)); }
+  50%      { transform: translateY(-18px) rotate(var(--r1,6deg)); }
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  background: var(--yellow);
+  color: var(--ink);
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em;
+  padding: 0.3rem 1.1rem;
+  border-radius: 20px; border: 2.5px solid var(--ink);
+  box-shadow: var(--shadow-s);
+  margin-bottom: 1.2rem;
+  animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+.hero-title {
+  font-size: clamp(4rem, 12vw, 9rem);
+  font-weight: 900; line-height: 1;
+  color: var(--ink);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+  position: relative; z-index: 1;
+  animation: popIn 0.55s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+  /* colored outline effect via text-shadow */
+  text-shadow: 3px 3px 0 var(--ink);
+}
+
+.hero-sub {
+  font-family: 'Boogaloo', cursive;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  color: var(--sky);
+  letter-spacing: 0.1em;
+  -webkit-text-stroke: 1px var(--ink);
+  animation: popIn 0.55s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+  margin-top: 0.15rem;
+}
+
+.hero-pills {
+  display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;
+  margin-top: 1.6rem;
+  animation: popIn 0.55s 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.hero-pill {
+  font-size: 0.78rem; font-weight: 700;
+  padding: 0.28rem 0.9rem;
+  border-radius: 20px;
+  border: 1.5px solid rgba(30,16,48,0.18);
+  opacity: 0.82;
+}
+.hero-pill:nth-child(1) { background: var(--pink);   color: var(--white); }
+.hero-pill:nth-child(2) { background: var(--sky);    color: var(--white); }
+.hero-pill:nth-child(3) { background: var(--mint);   color: var(--ink); }
+
+.hero-scroll {
+  position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2em;
+  color: var(--pink); cursor: pointer;
+  animation: bounce 2s 1s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(8px); }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ════════ SECTIONS ════════ */
+section { position: relative; z-index: 1; padding: 5rem 2rem; }
+.section-inner { max-width: 1120px; margin: 0 auto; }
+
+.sec-head { margin-bottom: 2.2rem; }
+.sec-label {
+  font-family: 'Boogaloo', cursive;
+  font-size: 1rem; color: var(--pink); letter-spacing: 0.22em;
+  margin-bottom: 0.2rem; display: block;
+}
+.sec-title {
+  display: inline-block;
+  font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+  font-weight: 900;
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 0.05em 0.35em;
+  border: var(--border);
+  box-shadow: var(--shadow-s);
+  border-radius: 6px;
+}
+
+/* ════════ WORKS ════════ */
+#works { background: var(--sky-lt); }
+
+.works-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.works-year-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.6rem; }
+.year-btn {
+  padding: 0.2rem 0.7rem; border-radius: 20px;
+  font-size: 0.68rem; font-weight: 700;
+  border: 2px solid rgba(30,16,48,0.25);
+  background: transparent; color: rgba(30,16,48,0.55);
+  cursor: pointer; font-family: var(--ff);
+  transition: all 0.12s;
+}
+.year-btn.active, .year-btn:hover {
+  background: var(--ink); color: var(--white); border-color: var(--ink);
+}
+.tab-btn {
+  padding: 0.42rem 1.1rem;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.78rem; font-weight: 700;
+  border: 2.5px solid var(--ink); border-radius: 20px;
+  background: var(--white); color: var(--ink);
+  cursor: pointer; box-shadow: var(--shadow-s);
+  transition: all 0.12s;
+}
+.tab-btn.active, .tab-btn:hover {
+  background: var(--pink); color: var(--white);
+  transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink);
+}
+
+.works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+  gap: 1.2rem;
+}
+.work-card {
+  background: var(--white);
+  border: var(--border); border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-m);
+  transition: transform 0.13s, box-shadow 0.13s;
+}
+.work-card:hover {
+  transform: translate(-4px,-4px);
+  box-shadow: var(--shadow-l);
+}
+.work-card-stripe { height: 10px; }
+.work-card[data-type="anime"] .work-card-stripe { background: var(--pink); }
+.work-card[data-type="game"]  .work-card-stripe { background: var(--sky); }
+.work-card[data-type="drama"] .work-card-stripe { background: var(--mint); }
+
+.work-body { padding: 0.95rem 1rem; }
+.work-badge {
+  display: inline-block;
+  font-size: 0.63rem; font-weight: 700;
+  padding: 0.12rem 0.5rem; border-radius: 10px;
+  border: 1.5px solid var(--ink);
+  margin-bottom: 0.5rem;
+}
+.work-card[data-type="anime"] .work-badge { background: var(--pink); color: var(--white); }
+.work-card[data-type="game"]  .work-badge { background: var(--sky);  color: var(--white); }
+.work-card[data-type="drama"] .work-badge { background: var(--mint); color: var(--ink); }
+
+.work-title { font-weight: 700; font-size: 0.88rem; line-height: 1.45; margin-bottom: 0.28rem; }
+.work-role  { font-size: 0.77rem; color: var(--purple); font-weight: 700; margin-bottom: 0.18rem; }
+.work-year  { font-size: 0.7rem; color: #888; }
+
+/* ════════ SCHEDULE ════════ */
+#schedule { background: var(--yellow-lt); }
+
+.cal-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+.cal-month-label {
+  font-family: 'Boogaloo', cursive;
+  font-size: 2rem; min-width: 160px;
+}
+.cal-arrow {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: var(--border); background: var(--white);
+  font-size: 1.1rem; font-weight: 900; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-s); transition: all 0.12s;
+}
+.cal-arrow:hover { background: var(--pink); color: var(--white); transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7,1fr);
+  border: var(--border); border-radius: 12px; overflow: hidden;
+  background: var(--ink);
+  gap: 2px;
+}
+.cal-head {
+  background: var(--pink); color: var(--white);
+  text-align: center; padding: 0.5rem;
+  font-size: 0.72rem; font-weight: 700;
+}
+.cal-cell {
+  background: var(--white); min-height: 82px; padding: 0.4rem;
+}
+.cal-cell.empty { background: #f8f8f8; }
+.cal-cell.today { background: #fff0f8; }
+.cal-day { font-size: 0.75rem; font-weight: 700; margin-bottom: 0.2rem; }
+.cal-cell.today .cal-day {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--pink); color: var(--white);
+  border: 2px solid var(--ink);
+}
+.cal-event {
+  font-size: 0.58rem; font-weight: 700;
+  padding: 0.1rem 0.28rem; border-radius: 4px;
+  border: 1.5px solid var(--ink); margin-bottom: 0.18rem;
+  cursor: default; line-height: 1.3;
+  background: var(--sky-lt); color: var(--ink);
+}
+.cal-event.live { background: var(--yellow); }
+.cal-notice { display: none; text-align: center; padding: 2rem 0; font-size: 0.82rem; color: #888; font-weight: 700; }
+
+/* ════════ VIDEOS ════════ */
+#videos { background: var(--ink); }
+#videos .sec-label { color: var(--yellow); }
+#videos .sec-title { background: var(--pink); color: var(--white); }
+
+.add-panel {
+  background: rgba(255,255,255,0.06);
+  border: 2.5px dashed rgba(255,94,169,0.5);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.8rem;
+}
+.add-panel-label { font-size: 0.8rem; font-weight: 700; color: var(--yellow); margin-bottom: 0.8rem; }
+.add-panel input {
+  background: rgba(255,255,255,0.09);
+  border: 2px solid rgba(255,255,255,0.22);
+  border-radius: 25px;
+  color: var(--white);
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.82rem;
+  padding: 0.58rem 1rem;
+  outline: none; width: 100%;
+  transition: border-color 0.2s;
+}
+.add-panel input:focus { border-color: var(--yellow); }
+.add-panel input::placeholder { color: rgba(255,255,255,0.38); }
+
+.video-searchbar { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.3rem; }
+.video-search-input {
+  flex: 1; min-width: 200px;
+  padding: 0.6rem 1.1rem;
+  background: rgba(255,255,255,0.09);
+  border: 2.5px solid rgba(255,255,255,0.22);
+  border-radius: 25px;
+  color: var(--white); font-family: 'Zen Maru Gothic', sans-serif; font-size: 0.82rem;
+  outline: none; transition: border-color 0.2s;
+}
+.video-search-input::placeholder { color: rgba(255,255,255,0.38); }
+.video-search-input:focus { border-color: var(--yellow); }
+
+.tag-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
+.tag-pill {
+  padding: 0.28rem 0.82rem;
+  border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: transparent; color: rgba(255,255,255,0.65);
+  cursor: pointer;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  transition: all 0.12s;
+}
+.tag-pill.active, .tag-pill:hover {
+  background: var(--yellow); color: var(--ink); border-color: var(--yellow);
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(285px,1fr));
+  gap: 1.4rem;
+}
+.video-card {
+  background: rgba(255,255,255,0.07);
+  border: 2.5px solid rgba(255,255,255,0.15);
+  border-radius: 16px; overflow: hidden;
+  transition: transform 0.13s, box-shadow 0.13s, border-color 0.13s;
+}
+.video-card:hover {
+  transform: translate(-4px,-4px);
+  box-shadow: 7px 7px 0 var(--pink);
+  border-color: var(--pink);
+}
+.video-thumb {
+  width: 100%; aspect-ratio: 16/9;
+  position: relative; overflow: hidden; cursor: pointer;
+}
+.video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.18);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.video-card:hover .video-overlay { background: rgba(0,0,0,0.04); }
+.play-btn {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--pink); border: 3px solid var(--white);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--white); font-size: 1.15rem;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.12s;
+}
+.video-card:hover .play-btn { transform: scale(1.12); }
+.video-info { padding: 1rem; }
+.video-date { font-size: 0.67rem; font-weight: 700; color: var(--yellow); margin-bottom: 0.3rem; }
+.video-title { font-size: 0.88rem; font-weight: 700; color: var(--white); line-height: 1.45; margin-bottom: 0.55rem; }
+.video-tags-row { display: flex; flex-wrap: wrap; gap: 0.28rem; }
+.v-tag {
+  font-size: 0.6rem; font-weight: 700;
+  padding: 0.1rem 0.42rem; border-radius: 8px;
+  background: rgba(255,255,255,0.1); color: var(--pink-lt);
+  border: 1.5px solid rgba(255,150,200,0.3); cursor: pointer;
+  transition: background 0.12s;
+}
+.v-tag:hover { background: rgba(255,94,169,0.28); }
+.v-tag-wrap { display: inline-flex; align-items: center; gap: 0; }
+.v-tag-rpt {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.55rem; padding: 0 0.15rem 0 0.05rem; line-height: 1;
+  opacity: 0; transition: opacity 0.13s;
+}
+.v-tag-wrap:hover .v-tag-rpt { opacity: 0.6; }
+.v-tag-rpt:hover { opacity: 1 !important; }
+.vid-card-actions {
+  display: flex; gap: 0.35rem; align-items: center;
+}
+.edit-btn, .report-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.68rem; font-weight: 800; padding: 0.18rem 0.48rem;
+  border-radius: 6px; font-family: var(--ff);
+  transition: all 0.13s;
+}
+.edit-btn { color: var(--yellow); border: 1.5px solid rgba(240,196,48,0.3); }
+.edit-btn:hover { background: rgba(240,196,48,0.18); border-color: var(--yellow); }
+.report-btn { color: rgba(255,255,255,0.3); border: 1.5px solid rgba(255,255,255,0.12); }
+.report-btn:hover { color: var(--pink); border-color: var(--pink); background: rgba(232,91,153,0.1); }
+
+/* INLINE EDIT FORM */
+.vid-edit-form {
+  padding: 0.8rem 1rem 1rem;
+  background: rgba(240,196,48,0.07);
+  border-top: 2px solid rgba(240,196,48,0.3);
+  display: none;
+}
+.vid-edit-form.open { display: block; }
+.vid-edit-form label {
+  display: block; font-size: 0.63rem; font-weight: 700;
+  color: var(--yellow); margin-bottom: 0.22rem; margin-top: 0.6rem;
+}
+.vid-edit-form label:first-child { margin-top: 0; }
+.vid-edit-form input {
+  width: 100%; background: rgba(255,255,255,0.09);
+  border: 2px solid rgba(255,255,255,0.2); border-radius: 8px;
+  color: var(--white); font-family: var(--ff); font-size: 0.78rem;
+  padding: 0.4rem 0.7rem; outline: none; box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.vid-edit-form input:focus { border-color: var(--yellow); }
+.vid-edit-form .ef-btns { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+.ef-save { background: var(--yellow); color: var(--ink); border: none; border-radius: 8px;
+  font-family: var(--ff); font-weight: 800; font-size: 0.75rem;
+  padding: 0.38rem 0.9rem; cursor: pointer; transition: opacity 0.13s; }
+.ef-save:hover { opacity: 0.85; }
+.ef-cancel { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.6);
+  border: 1.5px solid rgba(255,255,255,0.18); border-radius: 8px;
+  font-family: var(--ff); font-weight: 700; font-size: 0.75rem;
+  padding: 0.38rem 0.9rem; cursor: pointer; }
+
+/* REPORT MODAL */
+.report-modal-bg {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(15,5,25,0.85);
+  display: none; align-items: center; justify-content: center; padding: 2rem;
+}
+.report-modal-bg.open { display: flex; }
+.report-modal {
+  background: var(--ink); border: 3px solid var(--pink);
+  border-radius: 18px; width: 100%; max-width: 440px; padding: 2rem;
+  position: relative;
+}
+.report-modal h3 { margin: 0 0 0.3rem; font-size: 1rem; color: var(--pink-lt); }
+.report-modal p  { margin: 0 0 1.2rem; font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+.report-modal label { display: block; font-size: 0.68rem; font-weight: 700; color: var(--yellow); margin-bottom: 0.35rem; }
+.report-modal textarea {
+  width: 100%; box-sizing: border-box;
+  background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 10px; color: var(--white); font-family: var(--ff);
+  font-size: 0.8rem; padding: 0.6rem 0.9rem; resize: vertical; min-height: 90px;
+  outline: none; transition: border-color 0.15s;
+}
+.report-modal textarea:focus { border-color: var(--pink); }
+.report-modal .rm-btns { display: flex; gap: 0.6rem; margin-top: 1rem; }
+.rm-close { position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none; color: rgba(255,255,255,0.4);
+  font-size: 1.1rem; cursor: pointer; }
+.rm-close:hover { color: var(--white); }
+
+/* ADMIN PANEL */
+.admin-toggle-row {
+  display: flex; justify-content: flex-end; margin-bottom: 0.6rem;
+}
+.admin-toggle-btn {
+  background: none; border: 1.5px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.3); font-family: var(--ff); font-weight: 700;
+  font-size: 0.68rem; padding: 0.3rem 0.85rem; border-radius: 8px;
+  cursor: pointer; transition: all 0.13s;
+}
+.admin-toggle-btn:hover { border-color: var(--pink); color: var(--pink); }
+.admin-panel {
+  background: rgba(255,255,255,0.04); border: 2px solid rgba(232,91,153,0.35);
+  border-radius: 14px; padding: 1.2rem 1.4rem; margin-bottom: 1.5rem;
+  display: none;
+}
+.admin-panel.open { display: block; }
+.admin-panel h4 { margin: 0 0 0.8rem; font-size: 0.82rem; color: var(--pink-lt); }
+.admin-login { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.admin-login input {
+  flex: 1; min-width: 150px;
+  background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 8px; color: var(--white); font-family: var(--ff);
+  font-size: 0.8rem; padding: 0.42rem 0.85rem; outline: none;
+  transition: border-color 0.15s;
+}
+.admin-login input:focus { border-color: var(--pink); }
+.report-item {
+  background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 0.7rem;
+  display: flex; gap: 1rem; align-items: flex-start;
+}
+.report-item-info { flex: 1; min-width: 0; }
+.report-item-title { font-size: 0.78rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.report-item-reason { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-bottom: 0.2rem; line-height: 1.5; }
+.report-item-date { font-size: 0.62rem; color: rgba(255,255,255,0.28); }
+.report-delete-btn {
+  background: var(--pink); color: var(--white); border: none;
+  border-radius: 8px; font-family: var(--ff); font-weight: 800;
+  font-size: 0.7rem; padding: 0.38rem 0.7rem; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0; transition: opacity 0.13s;
+}
+.report-delete-btn:hover { opacity: 0.8; }
+.report-dismiss-btn {
+  background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5);
+  border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px;
+  font-family: var(--ff); font-weight: 700; font-size: 0.7rem;
+  padding: 0.38rem 0.7rem; cursor: pointer; flex-shrink: 0;
+}
+.admin-empty { font-size: 0.78rem; color: rgba(255,255,255,0.3); text-align: center; padding: 1.2rem 0; }
+
+/* VID PAGER */
+.vid-pager {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  margin-top: 1.8rem; justify-content: center;
+}
+.pg-info {
+  width: 100%; text-align: center;
+  font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.38);
+  margin-bottom: 0.3rem;
+}
+.pg-btn {
+  background: var(--card-bg); border: 2px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.7); font-family: var(--ff); font-weight: 800;
+  font-size: 0.82rem; padding: 0.4rem 0.75rem; border-radius: 8px;
+  cursor: pointer; transition: all 0.15s; line-height: 1;
+}
+.pg-btn:hover:not([disabled]) {
+  border-color: var(--pink); color: var(--pink); background: rgba(232,91,153,0.12);
+}
+.pg-btn.pg-active {
+  background: var(--pink); border-color: var(--pink);
+  color: #fff; box-shadow: 3px 3px 0 var(--ink-dark);
+}
+.pg-btn.pg-disabled, .pg-btn[disabled] {
+  opacity: 0.25; cursor: default;
+}
+
+/* VIDEO MODAL */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(15,5,25,0.88);
+  display: none; align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.modal-bg.open { display: flex; }
+.modal-box {
+  background: var(--ink); border: 3px solid var(--pink);
+  border-radius: 18px; width: 100%; max-width: 900px;
+  overflow: hidden; position: relative;
+  box-shadow: 8px 8px 0 var(--pink);
+}
+.modal-close {
+  position: absolute; top: 0.8rem; right: 0.8rem; z-index: 10;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--pink); border: 2.5px solid var(--white);
+  color: var(--white); font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 2px 2px 0 var(--ink); transition: transform 0.12s;
+}
+.modal-close:hover { transform: scale(1.12); }
+.modal-frame { width: 100%; aspect-ratio: 16/9; }
+.modal-frame iframe { width: 100%; height: 100%; border: none; display: block; }
+.modal-foot { padding: 1rem 1.2rem; }
+.modal-ttl { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+
+/* ════════ TALK COLLECTION ════════ */
+#taglog { background: #f3eeff; }
+#taglog .sec-label { color: var(--purple); }
+#taglog .sec-title { background: var(--purple); color: var(--white); box-shadow: var(--shadow-m); }
+
+.log-tag-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.6rem; }
+.log-pill {
+  padding: 0.28rem 0.82rem; border-radius: 20px;
+  font-size: 0.7rem; font-weight: 700;
+  border: 2px solid var(--purple);
+  background: transparent; color: var(--purple);
+  cursor: pointer; font-family: 'Zen Maru Gothic', sans-serif;
+  transition: all 0.12s;
+}
+.log-pill.active, .log-pill:hover {
+  background: var(--purple); color: var(--white);
+}
+
+/* submit form */
+.submit-panel {
+  background: var(--white);
+  border: var(--border); border-radius: var(--radius);
+  padding: 1.4rem 1.6rem; margin-bottom: 2rem;
+  box-shadow: var(--shadow-m);
+}
+.submit-panel-label { font-size: 0.88rem; font-weight: 700; color: var(--purple); margin-bottom: 1rem; }
+.submit-panel label { font-size: 0.7rem; font-weight: 700; color: var(--purple); display: block; margin-bottom: 0.28rem; }
+.submit-panel input,
+.submit-panel textarea {
+  width: 100%; padding: 0.5rem 0.8rem;
+  border: 2.5px solid var(--ink); border-radius: 8px;
+  font-family: 'Zen Maru Gothic', sans-serif; font-size: 0.82rem;
+  color: var(--ink); background: #fdf7ff; outline: none;
+  transition: border-color 0.18s;
+}
+.submit-panel input:focus,
+.submit-panel textarea:focus { border-color: var(--purple); }
+.submit-panel textarea { resize: vertical; }
+.submit-grid { display: grid; gap: 0.75rem; }
+.submit-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+/* log entries */
+.log-entry {
+  background: var(--white);
+  border: 2.5px solid var(--ink); border-radius: 12px;
+  padding: 1.1rem 1.2rem; margin-bottom: 1rem;
+  display: flex; gap: 1.2rem; align-items: flex-start;
+  box-shadow: var(--shadow-s);
+  transition: transform 0.12s, box-shadow 0.12s;
+  position: relative;
+}
+.log-entry:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-m); }
+.log-meta { min-width: 88px; font-size: 0.68rem; font-weight: 700; color: var(--purple); padding-top: 2px; line-height: 1.5; }
+.log-body { flex: 1; }
+.log-badge-row { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.45rem; }
+.badge {
+  font-size: 0.6rem; font-weight: 700;
+  padding: 0.1rem 0.5rem; border-radius: 8px; border: 1.5px solid var(--ink);
+}
+.badge-official { background: var(--yellow); color: var(--ink); }
+.badge-fan      { background: var(--sky-lt); color: var(--ink); }
+
+.log-quote {
+  font-size: 0.93rem; font-weight: 500; line-height: 1.75;
+  padding: 0.5rem 0.85rem;
+  background: var(--yellow-lt);
+  border-left: 4px solid var(--yellow);
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 0.55rem;
+}
+.log-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.log-tag {
+  font-size: 0.63rem; font-weight: 700;
+  padding: 0.12rem 0.5rem; border-radius: 10px;
+  background: var(--pink-lt); color: var(--ink);
+  border: 1.5px solid var(--ink); cursor: pointer;
+  transition: background 0.12s;
+}
+.log-tag:hover { background: var(--pink); color: var(--white); }
+.log-tag-wrap2 { display: inline-flex; align-items: center; gap: 0; }
+.log-tag-rpt {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.5rem; padding: 0 0.1rem 0 0.04rem; line-height: 1;
+  opacity: 0; transition: opacity 0.13s;
+}
+.log-tag-wrap2:hover .log-tag-rpt { opacity: 0.5; }
+.log-tag-rpt:hover { opacity: 1 !important; }
+.log-src-btn {
+  font-size: 0.7rem; font-weight: 700; color: var(--purple);
+  background: none; border: none; cursor: pointer; padding: 0;
+  margin-top: 0.42rem; display: block;
+  text-decoration: underline dotted;
+}
+.log-src-btn:hover { color: var(--pink); }
+.log-source { font-size: 0.67rem; color: #999; margin-top: 0.35rem; }
+
+/* LOG CARD ACTIONS */
+.log-card-actions {
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  display: flex; gap: 0.3rem; align-items: center;
+}
+.log-edit-btn, .log-report-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.62rem; font-weight: 800; padding: 0.16rem 0.42rem;
+  border-radius: 6px; font-family: var(--ff);
+  transition: all 0.13s; line-height: 1.4;
+}
+.log-edit-btn { color: var(--purple); border: 1.5px solid rgba(122,68,187,0.25); }
+.log-edit-btn:hover { background: rgba(122,68,187,0.12); border-color: var(--purple); }
+.log-report-btn { color: rgba(30,16,48,0.25); border: 1.5px solid rgba(30,16,48,0.1); }
+.log-report-btn:hover { color: var(--pink); border-color: var(--pink); background: rgba(232,91,153,0.08); }
+
+/* LOG INLINE EDIT FORM */
+.log-edit-form {
+  margin-top: 0.9rem; padding: 0.9rem 1rem;
+  background: rgba(122,68,187,0.07);
+  border: 1.5px solid rgba(122,68,187,0.25);
+  border-radius: 10px; display: none;
+}
+.log-edit-form.open { display: block; }
+.log-edit-form label {
+  display: block; font-size: 0.62rem; font-weight: 700;
+  color: var(--purple); margin-bottom: 0.2rem; margin-top: 0.55rem;
+}
+.log-edit-form label:first-child { margin-top: 0; }
+.log-edit-form input,
+.log-edit-form textarea {
+  width: 100%; box-sizing: border-box;
+  background: rgba(255,255,255,0.7);
+  border: 2px solid rgba(122,68,187,0.25);
+  border-radius: 8px; color: var(--ink); font-family: var(--ff);
+  font-size: 0.78rem; padding: 0.38rem 0.7rem; outline: none;
+  transition: border-color 0.15s; resize: vertical;
+}
+.log-edit-form input:focus,
+.log-edit-form textarea:focus { border-color: var(--purple); }
+.log-edit-form .lef-btns { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.lef-save {
+  background: var(--purple); color: #fff; border: none; border-radius: 8px;
+  font-family: var(--ff); font-weight: 800; font-size: 0.75rem;
+  padding: 0.36rem 0.9rem; cursor: pointer; transition: opacity 0.13s;
+}
+.lef-save:hover { opacity: 0.82; }
+.lef-cancel {
+  background: rgba(30,16,48,0.07); color: rgba(30,16,48,0.5);
+  border: 1.5px solid rgba(30,16,48,0.12); border-radius: 8px;
+  font-family: var(--ff); font-weight: 700; font-size: 0.75rem;
+  padding: 0.36rem 0.9rem; cursor: pointer;
+}
+
+/* ════════ FOOTER ════════ */
+footer {
+  background: var(--pink);
+  border-top: var(--border);
+  text-align: center; padding: 2.5rem 2rem;
+  font-size: 0.78rem; font-weight: 700;
+  color: var(--white); line-height: 2.1;
+  position: relative; z-index: 1;
+}
+footer .foot-logo {
+  font-family: 'Boogaloo', cursive;
+  font-size: 1.9rem; color: var(--yellow);
+  text-shadow: 2px 2px 0 var(--ink);
+  display: block; margin-bottom: 0.4rem;
+}
+footer a { color: var(--yellow); text-decoration: underline dotted; }
+footer a:hover { color: var(--white); }
+
+/* ════════ SHARED BUTTONS ════════ */
+.pop-btn {
+  padding: 0.52rem 1.35rem;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.8rem; font-weight: 700; cursor: pointer;
+  border: 2.5px solid var(--ink); border-radius: 25px;
+  box-shadow: var(--shadow-s);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.pop-btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+.btn-pink   { background: var(--pink);   color: var(--white); }
+.btn-yellow { background: var(--yellow); color: var(--ink); }
+.btn-white  { background: var(--white);  color: var(--ink); }
+.btn-sky    { background: var(--sky);    color: var(--white); }
+
+/* ════════ UTILS ════════ */
+.hidden { display: none !important; }
+.fade-in { opacity: 0; transform: translateY(22px); transition: opacity 0.65s, transform 0.65s; }
+.fade-in.visible { opacity: 1; transform: none; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 1.2rem; }
+  .nav-links a { font-size: 0.7rem; padding: 0.25rem 0.6rem; }
+  section { padding: 3.5rem 1.1rem; }
+  .works-grid { grid-template-columns: 1fr 1fr; }
+  .video-grid { grid-template-columns: 1fr; }
+  .submit-row-2 { grid-template-columns: 1fr; }
+}
+</style>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ══════════════════════════════
+   SUPABASE 設定
+   ▼ 公開前にご自身のURLとanon keyに書き換えてください
+══════════════════════════════ */
+const SUPABASE_URL  = 'https://psnumniqlpnjbmvihsjj.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_BIM0u38weZLzqey11OaZIg_HKBrkC98';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* 汎用ラッパー：テーブルから全行取得 */
+async function sbGetAll(table){
+  const { data, error } = await _sb.from(table).select('*').order('created_at', { ascending: false });
+  if(error){ console.error(table, error.message); return []; }
+  return data ?? [];
+}
+/* 汎用ラッパー：1行挿入 */
+async function sbInsert(table, row){
+  const { error } = await _sb.from(table).insert(row);
+  if(error) console.error(table, error.message);
+}
+/* 汎用ラッパー：id指定で更新 */
+async function sbUpdate(table, id, values){
+  const { error } = await _sb.from(table).update(values).eq('id', id);
+  if(error) console.error(table, error.message);
+}
+/* 汎用ラッパー：id指定で削除 */
+async function sbDelete(table, id){
+  const { error } = await _sb.from(table).delete().eq('id', id);
+  if(error) console.error(table, error.message);
+}
+</script>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <a class="nav-logo" href="javascript:void(0)" onclick="navTo('hero')">宮下<span>Fun!</span></a>
+  <ul class="nav-links">
+    <li><a href="javascript:void(0)" onclick="navTo('works')">出演作品</a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('schedule')">出演予定</a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('videos')">動画館</a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('taglog')">発言集</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <span class="deco" style="top:10%;left:5%;  --dur:4s;--delay:0s;  --r0:-6deg;--r1:4deg;font-size:2rem;opacity:0.55">🦀</span>
+  <span class="deco" style="top:20%;right:7%; --dur:4.5s;--delay:0.7s;--r0:4deg;--r1:-5deg;font-size:1.6rem;opacity:0.5">🪼</span>
+  <span class="deco" style="top:55%;left:3%;  --dur:5s;  --delay:1.2s;--r0:-4deg;--r1:6deg;font-size:1.9rem;opacity:0.5">🦀</span>
+  <span class="deco" style="top:38%;right:4%; --dur:4.8s;--delay:0.9s;--r0:5deg;--r1:-4deg;font-size:1.5rem;opacity:0.45">🪼</span>
+  <span class="deco" style="bottom:22%;left:7%;--dur:4.2s;--delay:1.8s;--r0:-5deg;--r1:7deg;font-size:1.8rem;opacity:0.5">🦀</span>
+  <span class="deco" style="bottom:26%;right:6%;--dur:3.8s;--delay:0.4s;--r0:3deg;--r1:-6deg;font-size:1.5rem;opacity:0.4">🪼</span>
+
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;">
+    <div class="hero-eyebrow">宮下Fun!</div>
+    <h1 class="hero-title">宮下早紀</h1>
+    <p class="hero-sub">Saki Miyashita</p>
+    <div class="hero-pills">
+      <span class="hero-pill">声優</span>
+      <span class="hero-pill">Singer</span>
+      <span class="hero-pill">Actor</span>
+    </div>
+  </div>
+  <div class="hero-scroll" onclick="navTo('works')">scroll ↓</div>
+</section>
+
+<!-- ══ WORKS ══ -->
+<section id="works" class="fade-in">
+  <div class="section-inner">
+    <div class="sec-head">
+      <span class="sec-label">✦ Works</span>
+      <h2 class="sec-title">出演作品</h2>
+    </div>
+    <div class="works-tabs">
+      <button class="tab-btn active" data-f="all">すべて</button>
+      <button class="tab-btn" data-f="anime">アニメ</button>
+      <button class="tab-btn" data-f="game">ゲーム</button>
+      <button class="tab-btn" data-f="drama">ドラマCD</button>
+    </div>
+    <div class="works-year-row" id="worksYearRow"></div>
+    <div class="works-grid" id="worksGrid"></div>
+  </div>
+</section>
+
+<!-- ══ SCHEDULE ══ -->
+<section id="schedule" class="fade-in">
+  <div class="section-inner">
+    <div class="sec-head">
+      <span class="sec-label">✦ Schedule</span>
+      <h2 class="sec-title">出演予定</h2>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-arrow" id="calPrev">◀</button>
+      <div class="cal-month-label" id="calLabel"></div>
+      <button class="cal-arrow" id="calNext">▶</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <p class="cal-notice" id="calNotice">この月の登録済みイベントはありません。</p>
+  </div>
+</section>
+
+<!-- ══ VIDEOS ══ -->
+<section id="videos" class="fade-in">
+  <div class="section-inner">
+    <div class="sec-head">
+      <span class="sec-label">✦ Video Hall</span>
+      <h2 class="sec-title">動画館</h2>
+    </div>
+
+
+    <!-- 動画追加パネル -->
+    <div class="add-panel" id="addPanel">
+      <div class="add-panel-label">+ 動画を追加する</div>
+      <div style="display:flex;gap:0.7rem;flex-wrap:wrap;align-items:center;">
+        <input id="addUrl" type="text" placeholder="YouTubeのURLを貼り付け…" style="flex:1;min-width:220px;">
+        <button class="pop-btn btn-pink" id="fetchBtn" style="white-space:nowrap;">取得</button>
+      </div>
+      <div id="addPreview" style="display:none;margin-top:1rem;">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;">
+          <img id="prevThumb" style="width:160px;border-radius:8px;border:2.5px solid var(--pink);flex-shrink:0;" src="" alt="">
+          <div style="flex:1;min-width:180px;display:grid;gap:0.5rem;">
+            <div>
+              <div style="font-size:0.68rem;font-weight:700;color:var(--yellow);margin-bottom:0.25rem;">タイトル</div>
+              <input id="prevTitle" type="text">
+            </div>
+            <div>
+              <div style="font-size:0.68rem;font-weight:700;color:var(--yellow);margin-bottom:0.25rem;">タグ（カンマ区切り）</div>
+              <input id="prevTags" type="text" placeholder="例: ゲーム実況, コラボ">
+            </div>
+            <div>
+              <div style="font-size:0.68rem;font-weight:700;color:var(--yellow);margin-bottom:0.25rem;">メモ</div>
+              <input id="prevDesc" type="text" placeholder="配信の説明…">
+            </div>
+            <div style="display:flex;gap:0.5rem;">
+              <button class="pop-btn btn-pink" id="addConfirmBtn">✓ 追加する</button>
+              <button class="pop-btn btn-white" id="addCancelBtn">キャンセル</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="addErr" style="display:none;margin-top:0.6rem;font-size:0.74rem;font-weight:700;color:var(--pink-lt);"></div>
+    </div>
+
+    <div class="admin-toggle-row" style="display:none;">
+      <button class="admin-toggle-btn" id="adminToggleBtn">🔑 管理人</button>
+    </div>
+    <div class="admin-panel" id="adminPanel">
+      <h4>🛡 管理人パネル</h4>
+      <div id="adminLoginArea" class="admin-login">
+        <input type="email" id="adminEmail" placeholder="メールアドレス" style="margin-bottom:0.4rem;">
+        <input type="password" id="adminPw" placeholder="パスワード">
+        <button class="pop-btn btn-pink" id="adminLoginBtn" style="white-space:nowrap;">ログイン</button>
+        <span id="adminPwErr" style="font-size:0.7rem;color:var(--pink-lt);display:none;">メールアドレスまたはパスワードが違います</span>
+      </div>
+      <div id="adminContent" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
+          <span style="font-size:0.72rem;font-weight:700;color:var(--yellow);">削除申請一覧</span>
+          <button class="admin-toggle-btn" id="adminLogoutBtn" style="font-size:0.62rem;">ログアウト</button>
+        </div>
+        <div id="adminReportList"></div>
+        <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">🏷 タグ削除申請</div>
+          <div id="adminTagReportList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-searchbar">
+      <input class="video-search-input" id="vidSearch" type="text" placeholder="🔍 タイトルで検索…">
+    </div>
+    <div class="tag-row" id="vidTagRow"></div>
+    <div class="video-grid" id="videoGrid"></div>
+    <div class="vid-pager" id="vidPager"></div>
+
+<!-- REPORT MODAL -->
+<div class="report-modal-bg" id="reportModal">
+  <div class="report-modal">
+    <button class="rm-close" id="reportClose">✕</button>
+    <h3>🚩 削除申請</h3>
+    <p>この動画の削除を管理人に申請します。<br>申請は管理人が確認後に処理されます。</p>
+    <div id="reportTargetTitle" style="font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:1rem;padding:0.5rem 0.8rem;background:rgba(255,255,255,0.07);border-radius:8px;"></div>
+    <label>申請理由（任意）</label>
+    <textarea id="reportReason" placeholder="例：URLが間違っている / 重複している など"></textarea>
+    <div class="rm-btns">
+      <button class="pop-btn btn-pink" id="reportSubmitBtn">申請する</button>
+      <button class="pop-btn btn-white" id="reportCancelBtn">キャンセル</button>
+    </div>
+  </div>
+</div>
+  </div>
+</section>
+
+<!-- VIDEO MODAL -->
+<div class="modal-bg" id="vidModal">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-frame" id="modalFrame"></div>
+    <div class="modal-foot">
+      <div class="modal-ttl" id="modalTitle"></div>
+      <div class="tag-row" id="modalTags"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TALK COLLECTION ══ -->
+<section id="taglog" class="fade-in">
+  <div class="section-inner">
+    <div class="sec-head">
+      <span class="sec-label">✦ Talk Collection</span>
+      <h2 class="sec-title">発言集</h2>
+    </div>
+    <p style="font-size:0.8rem;color:var(--ink2);margin-bottom:1.5rem;font-weight:500;">
+      宮下早紀さんの発言集。タグで検索！ファンのみなさんの投稿も大歓迎 ✨
+    </p>
+
+    <!-- 投稿フォーム -->
+    <div class="submit-panel">
+      <div class="submit-panel-label">発言を追加する</div>
+      <div class="submit-grid">
+        <div>
+          <label>発言内容 <span style="color:var(--pink)">*</span></label>
+          <textarea id="subQuote" rows="3" placeholder="宮下早紀さんの発言を入力…"></textarea>
+        </div>
+        <div class="submit-row-2">
+          <div>
+            <label>出典・配信回</label>
+            <input id="subEpisode" type="text" placeholder="例: Streaming Club 第3回">
+          </div>
+          <div>
+            <label>タグ（カンマ区切り）</label>
+            <input id="subTags" type="text" placeholder="例: ゲーム実況, ウマ娘">
+          </div>
+        </div>
+        <div>
+          <label>関連動画URL（任意）</label>
+          <input id="subVideo" type="text" placeholder="https://www.youtube.com/watch?v=…">
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <button class="pop-btn btn-pink" id="subBtn">投稿する</button>
+          <span id="subMsg" style="display:none;font-size:0.76rem;font-weight:700;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-tag-row" id="logTagRow"></div>
+
+    <div class="admin-toggle-row" style="display:none;margin-bottom:0.8rem;">
+      <button class="admin-toggle-btn" id="logAdminToggleBtn">🔑 管理人</button>
+    </div>
+    <div class="admin-panel" id="logAdminPanel">
+      <h4>🛡 管理人パネル（発言集）</h4>
+      <div id="logAdminLoginArea" class="admin-login">
+        <input type="email" id="logAdminEmail" placeholder="メールアドレス" style="margin-bottom:0.4rem;">
+        <input type="password" id="logAdminPw" placeholder="パスワード">
+        <button class="pop-btn btn-pink" id="logAdminLoginBtn" style="white-space:nowrap;">ログイン</button>
+        <span id="logAdminPwErr" style="font-size:0.7rem;color:var(--pink-lt);display:none;">メールアドレスまたはパスワードが違います</span>
+      </div>
+      <div id="logAdminContent" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
+          <span style="font-size:0.72rem;font-weight:700;color:var(--yellow);">削除申請一覧</span>
+          <button class="admin-toggle-btn" id="logAdminLogoutBtn" style="font-size:0.62rem;">ログアウト</button>
+        </div>
+        <div id="logAdminReportList"></div>
+        <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(122,68,187,0.2);">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">🏷 タグ削除申請</div>
+          <div id="logAdminTagReportList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="logList"></div>
+  </div>
+</section>
+
+<!-- TAG REPORT MODAL -->
+<div class="report-modal-bg" id="tagReportModal">
+  <div class="report-modal">
+    <button class="rm-close" id="tagReportClose">✕</button>
+    <h3>🏷 タグ削除申請</h3>
+    <p>このタグの削除を管理人に申請します。</p>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:0.25rem;">対象エントリー</div>
+      <div id="tagReportEntryTitle" style="font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.75);padding:0.45rem 0.8rem;background:rgba(255,255,255,0.07);border-radius:7px;"></div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:0.25rem;">削除するタグ</div>
+      <div id="tagReportTagName" style="font-size:0.88rem;font-weight:800;color:var(--yellow);padding:0.4rem 0.8rem;background:rgba(240,196,48,0.1);border:1.5px solid rgba(240,196,48,0.3);border-radius:7px;display:inline-block;"></div>
+    </div>
+    <label>申請理由（任意）</label>
+    <textarea id="tagReportReason" placeholder="例：タイポ / 内容と無関係 / 重複している など"></textarea>
+    <div class="rm-btns">
+      <button class="pop-btn btn-pink" id="tagReportSubmitBtn">申請する</button>
+      <button class="pop-btn btn-white" id="tagReportCancelBtn">キャンセル</button>
+    </div>
+  </div>
+</div>
+<div class="report-modal-bg" id="logReportModal">
+  <div class="report-modal">
+    <button class="rm-close" id="logReportClose">✕</button>
+    <h3>🚩 削除申請（発言集）</h3>
+    <p>この発言の削除を管理人に申請します。<br>申請は管理人が確認後に処理されます。</p>
+    <div id="logReportTargetQuote" style="font-size:0.78rem;font-weight:700;color:rgba(0,0,0,0.6);margin-bottom:1rem;padding:0.6rem 0.9rem;background:rgba(0,0,0,0.06);border-radius:8px;line-height:1.6;max-height:80px;overflow:hidden;text-overflow:ellipsis;"></div>
+    <label>申請理由（任意）</label>
+    <textarea id="logReportReason" placeholder="例：引用元が違う / 内容が不正確 など"></textarea>
+    <div class="rm-btns">
+      <button class="pop-btn btn-pink" id="logReportSubmitBtn">申請する</button>
+      <button class="pop-btn btn-white" id="logReportCancelBtn">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <span class="foot-logo">宮下Fun!</span>
+  Fan-made, not affiliated with official organizations.<br>
+  公式情報は <a href="https://x.com/SAKI_MIYASHITA" target="_blank">公式X（@SAKI_MIYASHITA）</a> をご確認ください。
+</footer>
+
+<script>
+/* ══════════════════════════════
+   HELPER
+══════════════════════════════ */
+// XSS対策: ユーザー入力を innerHTML に展開する前に必ずこれを通す
+function h(str){
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function navTo(id){
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ══════════════════════════════
+   DATA
+══════════════════════════════ */
+const WORKS = [
+  { title:"貴族転生 ～恵まれた生まれから最強の力を得る～", role:"ゾーイ",          type:"anime", year:"2026" },
+  { title:"鎧真伝サムライトルーパー",                     role:"子供",             type:"anime", year:"2026" },
+  { title:"魔女ガミ－The Witch of Luludidea－",           role:"カルマ",           type:"game",  year:"2025" },
+  { title:"スターセイヴァー",                             role:"エピンデル",       type:"game",  year:"2025〜" },
+  { title:"サラリーマンが異世界に行ったら四天王になった話", role:"キャットシーB",   type:"anime", year:"2025" },
+  { title:"ヴァージン・パンク Clockwork Girl（映画）",    role:"神氷羽舞",         type:"anime", year:"2025" },
+  { title:"神之塔 -Tower of God-",                        role:"マナ",             type:"anime", year:"2024" },
+  { title:"ハズレ枠の【状態異常スキル】で最強になった俺がすべてを蹂躙するまで", role:"セラス・アシュレイン", type:"anime", year:"2024" },
+  { title:"妖怪学校の先生はじめました！",                 role:"みーくん（少年佐野）", type:"anime", year:"2024" },
+  { title:"ウマ娘 プリティーダービー",                    role:"スティルインラブ", type:"game",  year:"2024〜" },
+  { title:"好きな子がめがねを忘れた",                     role:"火渕結衣花",       type:"anime", year:"2023" },
+  { title:"夫婦以上、恋人未満。",                         role:"桜坂詩織",         type:"anime", year:"2022" },
+  { title:"ヘブンバーンズレッド",                         role:"蒼井えりか",       type:"game",  year:"2022〜2024" },
+  { title:"機動戦士ガンダム U.C. ENGAGE",                 role:"ミネバ・ラオ・ザビ",type:"game",  year:"2022〜2025" },
+  { title:"装甲娘戦機",                                   role:"スズノ",           type:"anime", year:"2021" },
+  { title:"探偵はもう、死んでいる。",                     role:"シエスタ",         type:"anime", year:"2021" },
+  { title:"ワンダーエッグ・プライオリティ",               role:"吉田ヤエ",         type:"anime", year:"2021" },
+  { title:"Paradigm Paradox",                             role:"カオリ",           type:"game",  year:"2021" },
+  { title:"探偵はもう、死んでいる。 ドラマCD",           role:"ナレーター",       type:"drama", year:"2021" },
+  { title:"三角の距離は限りないゼロ ボイスドラマ",       role:"須藤伊津佳",       type:"drama", year:"2021" },
+  { title:"東方LostWord",                                 role:"大妖精 他",        type:"game",  year:"2020〜" },
+  { title:"荒野のコトブキ飛行隊",                         role:"姐さん",           type:"anime", year:"2019" },
+  { title:"ひとりぼっちの○○生活",                        role:"小篠咲真世",       type:"anime", year:"2019" },
+  { title:"放課後さいころ倶楽部",                         role:"武笠美姫",         type:"anime", year:"2019" },
+  { title:"モンスターストライク",                         role:"ベガ 他",          type:"game",  year:"2019〜2024" },
+  { title:"荒野のコトブキ飛行隊 大空のテイクオフガールズ!", role:"姐さん",          type:"game",  year:"2019" },
+  { title:"はるかなレシーブ",                             role:"比嘉かなた",       type:"anime", year:"2018" },
+];
+
+const TODAY = new Date();
+const SCHEDULE = {
+  "2026-03-14": [
+    { text:"土曜日はオフレコでお願いします！ ホワイトデースペシャル 昼の部", type:"live" },
+    { text:"土曜日はオフレコでお願いします！ ホワイトデースペシャル 夜の部", type:"live" },
+  ],
+  "2026-03-22": [
+    { text:"北海道ベストフレンドパーク（優木かな・宮下早紀）1部", type:"live" },
+    { text:"北海道ベストフレンドパーク（優木かな・宮下早紀）2部", type:"live" },
+  ],
+  "2026-03-29": [
+    { text:"「AnimeJapan 2026」ポニーキャニオンブース 「貴族転生」ステージ", type:"live" },
+  ],
+};
+
+let VIDEOS = [
+  { id:"v1",  youtubeId:"KT7LLjvys14",  title:"宮下早紀のStreaming Club #1（初回配信）",                  date:"2024-11-12", tags:["初回","自己紹介","ゲーム実況"],                         desc:"amiami Hobby Channelにて初配信。" },
+  { id:"v2",  youtubeId:"kZ5cQgOLFO4",  title:"宮下早紀のStreaming Club #3《Untitled Goose Game》",       date:"2024-11-26", tags:["Untitled Goose Game","ゲーム実況","コメディ"],            desc:"いたずらガチョウゲームを実況プレイ。" },
+  { id:"v3",  youtubeId:"dQw4w9WgXcQ",  title:"宮下早紀×春花らんのStreaming Club #6《It Takes Two》コラボ",date:"2024-12-10", tags:["It Takes Two","コラボ配信","春花らん"],                  desc:"春花らんさんとの初コラボ配信。協力プレイの楽しさに目覚めた回。" },
+  { id:"v6",  youtubeId:"HFYaHl83Q7A",  title:"Streaming Club 全員コラボ配信《桃太郎電鉄》",             date:"2025-02-24", tags:["全員コラボ","春花らん","湊みや","長月あおい","桃太郎電鉄"],  desc:"4人による初の全員コラボ配信。桃太郎電鉄で対決！" },
+  { id:"v7",  youtubeId:"L729ABmOgmM",  title:"宮下早紀のStreaming Club #33《ASTRONEER》",                date:"2025-06-24", tags:["ASTRONEER","ゲーム実況","探索","クラフト"],               desc:"惑星を舞台にしたクラフト&探索ゲーム『ASTRONEER』をプレイ。" },
+  { id:"v8",  youtubeId:"5PLcVxJjt-Q",  title:"宮下早紀のStreaming Club #41《ヴァレット/VARLET》先行実況",date:"2025-08-26", tags:["ヴァレット","VARLET","新作ゲーム","先行プレイ"],           desc:"8/28発売予定の新作『ヴァレット/VARLET』を先行実況プレイ。" },
+  { id:"v9",  youtubeId:"cy4ezGLJLtE",  title:"宮下早紀のStreaming Club #?《A Dance of Fire and Ice #02》",date:"2025-09-09", tags:["A Dance of Fire and Ice","音ゲー","高難易度"],           desc:"高難易度音楽ゲーム『A Dance of Fire and Ice』の続き。" },
+  { id:"v10", youtubeId:"LgOk0RvuzEY",  title:"宮下早紀のStreaming Club #?《日本事故物件監視協会》",      date:"2025-10-14", tags:["日本事故物件監視協会","ホラーゲーム","ゲーム実況"],         desc:"視聴者リクエストに応えてホラーゲームに挑戦！" },
+  { id:"v11", youtubeId:"ZHB1vBJO648",  title:"Streaming Club 全員コラボ配信《マリオカート ワールド》",   date:"2025-07-06", tags:["全員コラボ","春花らん","湊みや","長月あおい","マリオカート"],desc:"夏の特別コラボ！4人で『マリオカート ワールド』を対決。" },
+];
+
+const LOG_ENTRIES = [
+  { id:"o1", date:"2025年2月", episode:"れポたま！インタビュー",
+    quote:"とてもうれしかったですが、同時に「自分でいいのかな？」という不安もありまして……。でも「こうしてお声がけいただいたからには、自分のベストを尽くそう！」と切り替えて配信に臨みました。",
+    tags:["Streaming Club","番組への想い","不安と決意"], videoId:"v1", src:"れポたま！インタビュー（2025年2月）" },
+  { id:"o2", date:"2025年2月", episode:"れポたま！インタビュー",
+    quote:"いつも配信中のコメントやアーカイブのコメントで楽しませてもらっています。いつか応援してくださっているみなさんと一緒にゲームができたら嬉しいなと密かに思っています。",
+    tags:["ファンへ","Streaming Club","夢"], videoId:"v1", src:"れポたま！インタビュー（2025年2月）" },
+  { id:"o3", date:"2025年2月", episode:"れポたま！インタビュー",
+    quote:"「宮下早紀ってこういう声優なんだ」と知ってもらえるような配信を目指していきますので、これからも応援よろしくお願いします！",
+    tags:["Streaming Club","声優","番組への想い"], videoId:"v1", src:"れポたま！インタビュー（2025年2月）" },
+  { id:"o4", date:"2024年12月", episode:"れポたま！コラボインタビュー",
+    quote:"配信を観させていただいていたこともあると思いますが、「初めまして」とは思えないくらい、楽しくトークやゲームができました！",
+    tags:["コラボ配信","春花らん","It Takes Two"], videoId:"v3", src:"れポたま！インタビュー（2025年2月）" },
+  { id:"o5", date:"Streaming Club 第55回", episode:"第55回配信",
+    quote:"「早紀」の「早」は、元々4月に生まれる予定だったのが前年の12月に早く生まれたことからきていて、「紀」は深夜に受け入れてくれる病院が和歌山県（紀州）にあったことからきているんです。",
+    tags:["名前の由来","生い立ち","エピソード"], videoId:"v1", src:"宮下早紀のStreaming Club 第55回（Wikipedia掲載情報）" },
+  { id:"o6", date:"Streaming Club", episode:"配信内",
+    quote:"父は『Streaming Club』にハマって視聴してくれていて、「早紀がやってるの、おもろいやんけ。」と話していたそうで（笑）",
+    tags:["家族","父","エピソード","Streaming Club"], videoId:"v1", src:"Wikipedia掲載情報" },
+];
+
+/* ══════════════════════════════
+   WORKS
+══════════════════════════════ */
+const TYPE_LABEL = { anime:'アニメ', game:'ゲーム', drama:'ドラマCD' };
+let activeWorksType = 'all';
+let activeWorksYear = null;
+
+function getWorkYear(w){
+  return w.year.replace(/[〜～].*/, '');
+}
+function getAllWorkYears(){
+  return [...new Set(WORKS.map(getWorkYear))].sort((a,b)=>b-a);
+}
+
+function renderWorksYearRow(){
+  const row = document.getElementById('worksYearRow');
+  row.innerHTML = getAllWorkYears().map(y=>`
+    <button class="year-btn${activeWorksYear===y?' active':''}" data-y="${y}">${y}</button>
+  `).join('');
+  row.querySelectorAll('.year-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      activeWorksYear = activeWorksYear===b.dataset.y ? null : b.dataset.y;
+      renderWorksYearRow(); renderWorks();
+    });
+  });
+}
+
+function renderWorks(){
+  const grid = document.getElementById('worksGrid');
+  let list = WORKS;
+  if(activeWorksType !== 'all') list = list.filter(w=>w.type===activeWorksType);
+  if(activeWorksYear) list = list.filter(w=>getWorkYear(w)===activeWorksYear);
+  if(!list.length){
+    grid.innerHTML=`<p style="color:rgba(255,255,255,0.4);font-size:0.82rem;font-weight:700;padding:2rem 0;">該当する作品がありません。</p>`; return;
+  }
+  grid.innerHTML = list.map(w=>`
+    <div class="work-card" data-type="${w.type}">
+      <div class="work-card-stripe"></div>
+      <div class="work-body">
+        <span class="work-badge">${h(TYPE_LABEL[w.type])}</span>
+        <div class="work-title">${h(w.title)}</div>
+        <div class="work-role">役：${h(w.role)}</div>
+        <div class="work-year">${h(w.year)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    activeWorksType = btn.dataset.f;
+    renderWorksYearRow(); renderWorks();
+  });
+});
+renderWorksYearRow();
+renderWorks();
+
+/* ══════════════════════════════
+   CALENDAR
+══════════════════════════════ */
+let calY = TODAY.getFullYear(), calM = TODAY.getMonth();
+const DAYS = ['日','月','火','水','木','金','土'];
+const MONS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+function renderCal(){
+  document.getElementById('calLabel').textContent = `${calY}年 ${MONS[calM]}`;
+  const grid = document.getElementById('calGrid');
+  let html = DAYS.map(d=>`<div class="cal-head">${d}</div>`).join('');
+  const first = new Date(calY,calM,1).getDay();
+  const days  = new Date(calY,calM+1,0).getDate();
+  for(let i=0;i<first;i++) html+=`<div class="cal-cell empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const key=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = calY===TODAY.getFullYear()&&calM===TODAY.getMonth()&&d===TODAY.getDate();
+    const evs = SCHEDULE[key]||[];
+    html+=`<div class="cal-cell${isToday?' today':''}">
+      <div class="cal-day">${d}</div>
+      ${evs.map(e=>`<div class="cal-event${e.type==='live'?' live':''}">${e.text}</div>`).join('')}
+    </div>`;
+  }
+  grid.innerHTML = html;
+  const hasEv = Object.keys(SCHEDULE).some(k=>k.startsWith(`${calY}-${String(calM+1).padStart(2,'0')}-`));
+  document.getElementById('calNotice').style.display = hasEv?'none':'block';
+}
+document.getElementById('calPrev').onclick=()=>{ calM--; if(calM<0){calM=11;calY--;} renderCal(); };
+document.getElementById('calNext').onclick=()=>{ calM++; if(calM>11){calM=0;calY++;} renderCal(); };
+renderCal();
+
+/* ══════════════════════════════
+   VIDEOS
+══════════════════════════════ */
+let activeVidTag = null;
+let pendingVid = null;
+let vidPage = 0;
+const VID_PER_PAGE = 6;
+
+function getAllVidTags(){ return [...new Set(VIDEOS.flatMap(v=>v.tags))]; }
+
+function renderVidTags(){
+  const row = document.getElementById('vidTagRow');
+  row.innerHTML = getAllVidTags().map(t=>`
+    <button class="tag-pill${activeVidTag===t?' active':''}" data-t="${h(t)}">${h(t)}</button>
+  `).join('');
+  row.querySelectorAll('.tag-pill').forEach(b=>{
+    b.addEventListener('click',()=>{
+      activeVidTag = activeVidTag===b.dataset.t ? null : b.dataset.t;
+      vidPage=0; renderVidTags(); renderVidGrid();
+    });
+  });
+}
+
+function renderVidGrid(){
+  const q = document.getElementById('vidSearch').value.toLowerCase();
+  const grid = document.getElementById('videoGrid');
+  const pager = document.getElementById('vidPager');
+  let list = VIDEOS.filter(v=>{
+    const matchQ = !q || v.title.toLowerCase().includes(q) || v.desc.toLowerCase().includes(q);
+    const matchT = !activeVidTag || v.tags.includes(activeVidTag);
+    return matchQ && matchT;
+  });
+  if(!list.length){
+    grid.innerHTML=`<p style="color:rgba(255,255,255,0.4);font-size:0.82rem;font-weight:700;padding:2rem 0;">該当する動画がありません。</p>`;
+    pager.innerHTML=''; return;
+  }
+  const totalPages = Math.ceil(list.length / VID_PER_PAGE);
+  if(vidPage >= totalPages) vidPage = totalPages - 1;
+  const page = list.slice(vidPage * VID_PER_PAGE, (vidPage+1) * VID_PER_PAGE);
+
+  grid.innerHTML = page.map(v=>`
+    <div class="video-card" data-id="${v.id}">
+      <div class="video-thumb" data-id="${v.id}">
+        <img src="https://img.youtube.com/vi/${v.youtubeId}/mqdefault.jpg" alt="${h(v.title)}" loading="lazy">
+        <div class="video-overlay"><div class="play-btn">▶</div></div>
+      </div>
+      <div class="video-info">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.4rem;">
+          <div class="video-date">${h(v.date)}</div>
+          <div class="vid-card-actions">
+            <button class="edit-btn" data-id="${v.id}" title="編集">✎ 編集</button>
+            <button class="report-btn" data-id="${v.id}" title="削除申請">🚩</button>
+          </div>
+        </div>
+        <div class="video-title">${h(v.title)}</div>
+        <div class="video-tags-row">${v.tags.map(t=>`<span class="v-tag-wrap"><span class="v-tag" data-t="${h(t)}">${h(t)}</span><button class="v-tag-rpt" data-t="${h(t)}" data-vid="${h(v.id)}" data-title="${h(v.title.slice(0,40))}" title="このタグを申請">🏷</button></span>`).join('')}</div>
+      </div>
+      <div class="vid-edit-form" id="ef-${v.id}">
+        <label>タイトル</label>
+        <input class="ef-title" value="${h(v.title)}">
+        <label>タグ（カンマ区切り）</label>
+        <input class="ef-tags" value="${h(v.tags.join(', '))}">
+        <label>メモ</label>
+        <input class="ef-desc" value="${h(v.desc)}">
+        <div class="ef-btns">
+          <button class="ef-save" data-id="${v.id}">保存</button>
+          <button class="ef-cancel" data-id="${v.id}">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.video-thumb').forEach(th=>{
+    th.addEventListener('click',()=>openModal(th.dataset.id));
+  });
+  grid.querySelectorAll('.v-tag').forEach(t=>{
+    t.addEventListener('click',()=>{ activeVidTag=t.dataset.t; vidPage=0; renderVidTags(); renderVidGrid(); });
+  });
+  grid.querySelectorAll('.v-tag-rpt').forEach(b=>{
+    b.addEventListener('click', e=>{ e.stopPropagation(); openTagReportModal('vid', b.dataset.vid, b.dataset.title, b.dataset.t); });
+  });
+
+  // 編集ボタン
+  grid.querySelectorAll('.edit-btn').forEach(b=>{
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      const form = document.getElementById('ef-'+b.dataset.id);
+      const isOpen = form.classList.contains('open');
+      // 全フォームを閉じる
+      grid.querySelectorAll('.vid-edit-form').forEach(f=>f.classList.remove('open'));
+      grid.querySelectorAll('.edit-btn').forEach(eb=>eb.textContent='✎ 編集');
+      if(!isOpen){ form.classList.add('open'); b.textContent='✕ 閉じる'; }
+    });
+  });
+
+  // 編集保存
+  grid.querySelectorAll('.ef-save').forEach(b=>{
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      const v = VIDEOS.find(x=>x.id===b.dataset.id); if(!v) return;
+      const form = document.getElementById('ef-'+b.dataset.id);
+      v.title = form.querySelector('.ef-title').value.trim() || v.title;
+      v.tags  = form.querySelector('.ef-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+      v.desc  = form.querySelector('.ef-desc').value.trim();
+      renderVidTags(); renderVidGrid();
+    });
+  });
+
+  // 編集キャンセル
+  grid.querySelectorAll('.ef-cancel').forEach(b=>{
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      const form = document.getElementById('ef-'+b.dataset.id);
+      form.classList.remove('open');
+      const editBtn = grid.querySelector(`.edit-btn[data-id="${b.dataset.id}"]`);
+      if(editBtn) editBtn.textContent='✎ 編集';
+    });
+  });
+
+  // 削除申請ボタン
+  grid.querySelectorAll('.report-btn').forEach(b=>{
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      openReportModal(b.dataset.id);
+    });
+  });
+
+  // ページネーション
+  if(totalPages <= 1){ pager.innerHTML=''; return; }
+  let btns = '';
+  btns += `<button class="pg-btn${vidPage===0?' pg-disabled':''}" data-p="${vidPage-1}" ${vidPage===0?'disabled':''}>‹</button>`;
+  for(let i=0;i<totalPages;i++){
+    btns += `<button class="pg-btn${i===vidPage?' pg-active':''}" data-p="${i}">${i+1}</button>`;
+  }
+  btns += `<button class="pg-btn${vidPage===totalPages-1?' pg-disabled':''}" data-p="${vidPage+1}" ${vidPage===totalPages-1?'disabled':''}>›</button>`;
+  pager.innerHTML = `<div class="pg-info">${list.length}件 / ${vidPage+1}ページ目（全${totalPages}ページ）</div>` + btns;
+  pager.querySelectorAll('.pg-btn:not([disabled])').forEach(b=>{
+    b.addEventListener('click',()=>{
+      vidPage = parseInt(b.dataset.p);
+      renderVidGrid();
+      document.getElementById('videos').scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+}
+
+function extractYtId(url){
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|live\/|embed\/))([A-Za-z0-9_-]{11})/);
+  return m?m[1]:null;
+}
+
+document.getElementById('fetchBtn').addEventListener('click', async()=>{
+  const url = document.getElementById('addUrl').value.trim();
+  const err = document.getElementById('addErr');
+  err.style.display='none';
+  const vid = extractYtId(url);
+  if(!vid){ err.textContent='⚠ 有効なYouTube URLを入力してください。'; err.style.display='block'; return; }
+  pendingVid = vid;
+  document.getElementById('prevThumb').src = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
+  try{
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`);
+    const data = await res.json();
+    document.getElementById('prevTitle').value = data.title||'';
+  } catch(e){ document.getElementById('prevTitle').value=''; }
+  document.getElementById('addPreview').style.display='block';
+});
+
+document.getElementById('addConfirmBtn').addEventListener('click',()=>{
+  if(!pendingVid) return;
+  const rawTitle = document.getElementById('prevTitle').value.trim();
+  const rawTags  = document.getElementById('prevTags').value;
+  const rawDesc  = document.getElementById('prevDesc').value.trim();
+  // 長さバリデーション
+  if(rawTitle.length > 200){
+    const err=document.getElementById('addErr'); err.textContent='⚠ タイトルは200文字以内にしてください。'; err.style.display='block'; return;
+  }
+  const tags = rawTags.split(',').map(t=>t.trim().slice(0,30)).filter(Boolean).slice(0,10);
+  const title = rawTitle.slice(0,200) || '(タイトル未設定)';
+  const desc  = rawDesc.slice(0,500);
+  const id    = 'v' + Date.now();
+  VIDEOS.unshift({ id, youtubeId:pendingVid, title, date:new Date().toISOString().slice(0,10), tags, desc });
+  document.getElementById('addPreview').style.display='none';
+  document.getElementById('addUrl').value='';
+  document.getElementById('prevTitle').value='';
+  document.getElementById('prevTags').value='';
+  document.getElementById('prevDesc').value='';
+  pendingVid=null;
+  renderVidTags(); renderVidGrid();
+});
+
+document.getElementById('addCancelBtn').addEventListener('click',()=>{
+  document.getElementById('addPreview').style.display='none';
+  document.getElementById('addErr').style.display='none';
+  document.getElementById('addUrl').value='';
+  pendingVid=null;
+});
+
+document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; renderVidGrid(); });
+renderVidTags(); renderVidGrid();
+
+/* ══════════════════════════════
+   REPORT MODAL & ADMIN PANEL
+══════════════════════════════ */
+let reportTargetId = null;
+let adminUnlocked = false;
+let DELETE_REPORTS = [];
+
+async function loadReports(){
+  DELETE_REPORTS = await sbGetAll('delete_reports');
+}
+async function saveReports(){ /* Supabase版では個別操作のため不使用 */ }
+
+function openReportModal(vidId){
+  const v = VIDEOS.find(x=>x.id===vidId); if(!v) return;
+  reportTargetId = vidId;
+  document.getElementById('reportTargetTitle').textContent = '🎬 ' + v.title;
+  document.getElementById('reportReason').value = '';
+  document.getElementById('reportModal').classList.add('open');
+}
+document.getElementById('reportClose').onclick  = ()=>{ document.getElementById('reportModal').classList.remove('open'); };
+document.getElementById('reportCancelBtn').onclick = ()=>{ document.getElementById('reportModal').classList.remove('open'); };
+document.getElementById('reportSubmitBtn').addEventListener('click', async()=>{
+  if(!reportTargetId) return;
+  const v = VIDEOS.find(x=>x.id===reportTargetId); if(!v) return;
+  const reason = document.getElementById('reportReason').value.trim();
+  await loadReports();
+  // 同じ動画への重複申請はスキップ
+  if(DELETE_REPORTS.some(r=>r.vid_id===reportTargetId && r.status==='pending')){
+    document.getElementById('reportModal').classList.remove('open');
+    showToast('この動画はすでに申請済みです'); return;
+  }
+  await sbInsert('delete_reports', {
+    vid_id: reportTargetId,
+    title: v.title, youtube_id: v.youtubeId,
+    reason: reason || '（理由なし）',
+    status: 'pending'
+  });
+  await loadReports();
+  document.getElementById('reportModal').classList.remove('open');
+  showToast('削除申請を送信しました 🙏');
+  reportTargetId = null;
+});
+
+// 管理人パネル
+document.getElementById('adminToggleBtn').addEventListener('click',()=>{
+  const panel = document.getElementById('adminPanel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open') && adminUnlocked){ renderAdminReports(); renderTagAdminReports('vid'); }
+});
+document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
+  const email = document.getElementById('adminEmail').value.trim();
+  const pw    = document.getElementById('adminPw').value;
+  const { data, error } = await _sb.auth.signInWithPassword({ email, password: pw });
+  if(!error && data.session){
+    adminUnlocked = true;
+    document.getElementById('adminLoginArea').style.display='none';
+    document.getElementById('adminContent').style.display='block';
+    document.getElementById('adminPwErr').style.display='none';
+    await loadReports(); await loadTagReports(); renderAdminReports(); renderTagAdminReports('vid');
+  } else {
+    document.getElementById('adminPwErr').style.display='inline';
+    document.getElementById('adminPw').value='';
+  }
+});
+document.getElementById('adminPw').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('adminLoginBtn').click(); });
+document.getElementById('adminLogoutBtn').addEventListener('click', async()=>{
+  await _sb.auth.signOut();
+  adminUnlocked = false;
+  document.getElementById('adminLoginArea').style.display='flex';
+  document.getElementById('adminContent').style.display='none';
+  document.getElementById('adminPw').value='';
+  document.getElementById('adminEmail').value='';
+  document.getElementById('adminPanel').classList.remove('open');
+});
+
+function renderAdminReports(){
+  const list = document.getElementById('adminReportList');
+  const pending = DELETE_REPORTS.filter(r=>r.status==='pending');
+  if(!pending.length){
+    list.innerHTML=`<div class="admin-empty">削除申請はありません ✨</div>`; return;
+  }
+  list.innerHTML = pending.map(r=>`
+    <div class="report-item" data-rid="${r.id}">
+      <div class="report-item-info">
+        <div class="report-item-title">🎬 ${h(r.title)}</div>
+        <div class="report-item-reason">理由：${h(r.reason)}</div>
+        <div class="report-item-date">申請日：${h(r.created_at ? new Date(r.created_at).toLocaleDateString('ja-JP') : '')}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.4rem;">
+        <button class="report-delete-btn" data-rid="${r.id}" data-vid="${r.vid_id}">削除実行</button>
+        <button class="report-dismiss-btn" data-rid="${r.id}">却下</button>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.report-delete-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      if(!confirm(`この動画を削除しますか？`)) return;
+      VIDEOS = VIDEOS.filter(v=>v.id!==b.dataset.vid);
+      await sbUpdate('delete_reports', b.dataset.rid, {status:'deleted'});
+      await loadReports();
+      renderVidTags(); renderVidGrid(); renderAdminReports();
+      showToast('削除しました');
+    });
+  });
+  list.querySelectorAll('.report-dismiss-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      await sbUpdate('delete_reports', b.dataset.rid, {status:'dismissed'});
+      await loadReports(); renderAdminReports();
+      showToast('申請を却下しました');
+    });
+  });
+}
+
+// トースト通知
+function showToast(msg){
+  let t = document.getElementById('siteToast');
+  if(!t){
+    t = document.createElement('div'); t.id='siteToast';
+    t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--pink);color:#fff;font-family:var(--ff);font-weight:800;font-size:0.82rem;padding:0.65rem 1.4rem;border-radius:99px;box-shadow:3px 3px 0 rgba(0,0,0,0.3);z-index:999;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.style.opacity='0', 2800);
+}
+
+loadReports();
+
+/* ══════════════════════════════
+   TAG REPORT (エントリー×タグ)
+══════════════════════════════ */
+let tagReportTarget = null; // { section:'vid'|'log', entryId, entryTitle, tag }
+let TAG_REPORTS = [];
+
+async function loadTagReports(){
+  TAG_REPORTS = await sbGetAll('tag_reports');
+}
+async function saveTagReports(){ /* Supabase版では個別操作のため不使用 */ }
+
+function openTagReportModal(section, entryId, entryTitle, tag){
+  tagReportTarget = { section, entryId, entryTitle, tag };
+  document.getElementById('tagReportEntryTitle').textContent = entryTitle;
+  document.getElementById('tagReportTagName').textContent = '# ' + tag;
+  document.getElementById('tagReportReason').value='';
+  document.getElementById('tagReportModal').classList.add('open');
+}
+document.getElementById('tagReportClose').onclick     = ()=>document.getElementById('tagReportModal').classList.remove('open');
+document.getElementById('tagReportCancelBtn').onclick = ()=>document.getElementById('tagReportModal').classList.remove('open');
+document.getElementById('tagReportSubmitBtn').addEventListener('click', async()=>{
+  if(!tagReportTarget) return;
+  const { section, entryId, entryTitle, tag } = tagReportTarget;
+  const reason = document.getElementById('tagReportReason').value.trim();
+  await loadTagReports();
+  if(TAG_REPORTS.some(r=>r.entry_id===entryId&&r.tag===tag&&r.status==='pending')){
+    document.getElementById('tagReportModal').classList.remove('open');
+    showToast('この申請はすでに送信済みです'); return;
+  }
+  await sbInsert('tag_reports', {
+    section, entry_id: entryId, entry_title: entryTitle, tag,
+    reason: reason||'（理由なし）',
+    status:'pending'
+  });
+  await loadTagReports();
+  document.getElementById('tagReportModal').classList.remove('open');
+  showToast('タグ申請を送信しました 🙏');
+  tagReportTarget = null;
+});
+loadTagReports();
+
+function renderTagAdminReports(section){
+  const listId = section==='vid' ? 'adminTagReportList' : 'logAdminTagReportList';
+  const list = document.getElementById(listId); if(!list) return;
+  const pending = TAG_REPORTS.filter(r=>r.section===section&&r.status==='pending');
+  if(!pending.length){ list.innerHTML=`<div class="admin-empty">タグ削除申請はありません ✨</div>`; return; }
+  list.innerHTML = pending.map(r=>`
+    <div class="report-item" data-rid="${r.id}">
+      <div class="report-item-info">
+        <div class="report-item-title" style="font-size:0.72rem;">${h(r.entry_title)}</div>
+        <div class="report-item-reason" style="color:var(--yellow);font-weight:800;margin:0.2rem 0;">タグ：# ${h(r.tag)}</div>
+        <div class="report-item-reason">理由：${h(r.reason)}</div>
+        <div class="report-item-date">申請日：${h(r.created_at ? new Date(r.created_at).toLocaleDateString('ja-JP') : '')}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.4rem;">
+        <button class="report-delete-btn" data-rid="${r.id}" data-eid="${r.entry_id}" data-tag="${r.tag}" data-section="${r.section}">削除実行</button>
+        <button class="report-dismiss-btn" data-rid="${r.id}">却下</button>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.report-delete-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      if(!confirm(`このタグを削除しますか？\nタグ：${b.dataset.tag}`)) return;
+      const { eid, tag, section: sec } = b.dataset;
+      if(sec==='vid'){
+        const v = VIDEOS.find(x=>x.id===eid);
+        if(v){ v.tags = v.tags.filter(t=>t!==tag); }
+        if(activeVidTag===tag) activeVidTag=null;
+        renderVidTags(); renderVidGrid();
+      } else {
+        const eOff = LOG_ENTRIES.find(x=>x.id===eid);
+        if(eOff) eOff.tags=(eOff.tags||[]).filter(t=>t!==tag);
+        const eUser = USER_LOGS.find(x=>x.id===eid);
+        if(eUser){
+          eUser.tags=(eUser.tags||[]).filter(t=>t!==tag);
+          await sbUpdate('user_logs', eUser.id, {tags: eUser.tags});
+        }
+        if(activeLogTag===tag) activeLogTag=null;
+        renderLogTags(); renderLogList();
+      }
+      await sbUpdate('tag_reports', b.dataset.rid, {status:'deleted'});
+      await loadTagReports(); renderTagAdminReports(sec);
+      showToast('タグを削除しました');
+    });
+  });
+  list.querySelectorAll('.report-dismiss-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      await sbUpdate('tag_reports', b.dataset.rid, {status:'dismissed'});
+      await loadTagReports(); renderTagAdminReports(section);
+      showToast('申請を却下しました');
+    });
+  });
+}
+
+/* ══════════════════════════════
+   MODAL
+══════════════════════════════ */
+function openModal(id){
+  const v = VIDEOS.find(x=>x.id===id);
+  if(!v) return;
+  document.getElementById('modalFrame').innerHTML =
+    `<iframe src="https://www.youtube.com/embed/${v.youtubeId}?autoplay=1" allowfullscreen allow="autoplay"></iframe>`;
+  document.getElementById('modalTitle').textContent = v.title;
+  document.getElementById('modalTags').innerHTML =
+    v.tags.map(t=>`<span class="tag-pill" style="cursor:default;border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);">${h(t)}</span>`).join('');
+  document.getElementById('vidModal').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('vidModal').classList.remove('open');
+  document.getElementById('modalFrame').innerHTML='';
+}
+document.getElementById('modalClose').onclick = closeModal;
+document.getElementById('vidModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
+
+/* ══════════════════════════════
+   TALK COLLECTION + STORAGE
+══════════════════════════════ */
+let activeLogTag = null;
+let USER_LOGS = [];
+
+async function loadUserLogs(){
+  USER_LOGS = await sbGetAll('user_logs');
+}
+async function saveUserLogs(){ /* Supabase版では個別操作のため不使用 */ }
+
+function allLogs(){
+  return [
+    ...LOG_ENTRIES.map(e=>({...e, isOfficial:true})),
+    ...USER_LOGS.map(e=>({
+      ...e,
+      isOfficial: false,
+      // Supabaseのsnake_caseをキャメルケースに統一
+      youtubeUrl: e.youtube_url || e.youtubeUrl || null,
+      videoId:    e.video_id    || e.videoId    || null,
+      date: e.created_at ? new Date(e.created_at).toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) : '',
+      tags: Array.isArray(e.tags) ? e.tags : [],
+    })),
+  ];
+}
+function allLogTags(){ return [...new Set(allLogs().flatMap(e=>e.tags))]; }
+
+function renderLogTags(){
+  const row = document.getElementById('logTagRow');
+  row.innerHTML = ['すべて',...allLogTags()].map(t=>`
+    <button class="${t==='すべて'?'log-pill':'log-pill'}${(t==='すべて'&&!activeLogTag)||(activeLogTag===t)?' active':''}" data-t="${h(t)}">${h(t)}</button>
+  `).join('');
+  row.querySelectorAll('.log-pill').forEach(b=>{
+    b.addEventListener('click',()=>{
+      activeLogTag = b.dataset.t==='すべて'?null:b.dataset.t;
+      renderLogTags(); renderLogList();
+    });
+  });
+}
+
+function renderLogList(){
+  const el = document.getElementById('logList');
+  const all = allLogs();
+  const list = activeLogTag ? all.filter(e=>e.tags.includes(activeLogTag)) : all;
+  if(!list.length){
+    el.innerHTML=`<p style="text-align:center;padding:2.5rem 0;font-size:0.82rem;font-weight:700;color:#aaa;">まだ発言集がありません。最初に投稿してみましょう！</p>`;
+    return;
+  }
+  el.innerHTML = list.map(e=>`
+    <div class="log-entry" data-id="${e.id||''}">
+      <div class="log-meta">${h(e.date)}<br>${h(e.episode)}</div>
+      <div class="log-body">
+        <div class="log-badge-row">
+          ${e.isOfficial
+            ? `<span class="badge badge-official">公式確認済</span>`
+            : `<span class="badge badge-fan">ファン投稿</span>`}
+        </div>
+        <div class="log-quote">「${h(e.quote)}」</div>
+        <div class="log-tags">${(e.tags||[]).map(t=>`<span class="log-tag-wrap2"><span class="log-tag" data-t="${h(t)}">${h(t)}</span><button class="log-tag-rpt" data-t="${h(t)}" data-eid="${h(e.id||'')}" data-title="${h((e.quote||'').slice(0,30))}" title="このタグを申請">🏷</button></span>`).join('')}</div>
+        ${e.src ? `<div class="log-source">📎 ${h(e.src)}</div>` : ''}
+        ${e.videoId||e.youtubeUrl
+          ? `<button class="log-src-btn" data-vid="${e.videoId||''}" data-url="${e.youtubeUrl||''}">▶ 動画で見る</button>`
+          : ''}
+        <div class="log-edit-form" id="lef-${e.id||''}">
+          <label>発言内容</label>
+          <textarea class="lef-quote" rows="3">${h(e.quote)}</textarea>
+          <label>出典・配信回</label>
+          <input class="lef-episode" value="${h(e.episode)}">
+          <label>タグ（カンマ区切り）</label>
+          <input class="lef-tags" value="${h((e.tags||[]).join(', '))}">
+          <label>出典テキスト</label>
+          <input class="lef-src" value="${h(e.src)}">
+          <div class="lef-btns">
+            <button class="lef-save" data-id="${e.id||''}" data-official="${e.isOfficial?'1':'0'}">保存</button>
+            <button class="lef-cancel" data-id="${e.id||''}">キャンセル</button>
+          </div>
+        </div>
+      </div>
+      <div class="log-card-actions">
+        <button class="log-edit-btn" data-id="${e.id||''}" title="編集">✎</button>
+        <button class="log-report-btn" data-id="${e.id||''}" data-quote="${h((e.quote||'').slice(0,60))}" title="削除申請">🚩</button>
+      </div>
+    </div>
+  `).join('');
+
+  el.querySelectorAll('.log-tag').forEach(t=>{
+    t.addEventListener('click',()=>{ activeLogTag=t.dataset.t; renderLogTags(); renderLogList(); });
+  });
+  el.querySelectorAll('.log-tag-rpt').forEach(b=>{
+    b.addEventListener('click', e=>{ e.stopPropagation(); openTagReportModal('log', b.dataset.eid, '「'+b.dataset.title+'…」', b.dataset.t); });
+  });
+  el.querySelectorAll('.log-src-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      if(b.dataset.vid){
+        document.getElementById('videos').scrollIntoView({behavior:'smooth'});
+        setTimeout(()=>openModal(b.dataset.vid),600);
+      } else if(b.dataset.url) window.open(b.dataset.url,'_blank');
+    });
+  });
+
+  // 編集ボタン
+  el.querySelectorAll('.log-edit-btn').forEach(b=>{
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      const form = document.getElementById('lef-'+b.dataset.id);
+      if(!form) return;
+      const isOpen = form.classList.contains('open');
+      el.querySelectorAll('.log-edit-form').forEach(f=>f.classList.remove('open'));
+      el.querySelectorAll('.log-edit-btn').forEach(eb=>eb.textContent='✎');
+      if(!isOpen){ form.classList.add('open'); b.textContent='✕'; }
+    });
+  });
+
+  // 編集保存
+  el.querySelectorAll('.lef-save').forEach(b=>{
+    b.addEventListener('click', async e=>{
+      e.stopPropagation();
+      const form = document.getElementById('lef-'+b.dataset.id); if(!form) return;
+      const newQuote   = form.querySelector('.lef-quote').value.trim();
+      const newEpisode = form.querySelector('.lef-episode').value.trim();
+      const newTags    = form.querySelector('.lef-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+      const newSrc     = form.querySelector('.lef-src').value.trim();
+      if(b.dataset.official==='1'){
+        // 公式エントリーはLOG_ENTRIES配列を直接更新（ページ内メモリのみ）
+        const idx = LOG_ENTRIES.findIndex((_,i)=>LOG_ENTRIES[i]===LOG_ENTRIES.find(x=>
+          (x.id||('o'+i))===b.dataset.id
+        ));
+        // idで探してなければインデックスベースで
+        const entry = LOG_ENTRIES.find(x=>(x.id||'')===b.dataset.id);
+        if(entry){
+          if(newQuote) entry.quote = newQuote;
+          entry.episode = newEpisode; entry.tags = newTags; entry.src = newSrc;
+        }
+      } else {
+        const entry = USER_LOGS.find(x=>x.id===b.dataset.id);
+        if(entry){
+          if(newQuote) entry.quote = newQuote;
+          entry.episode = newEpisode; entry.tags = newTags; entry.src = newSrc;
+          await sbUpdate('user_logs', entry.id, {
+            quote: entry.quote, episode: entry.episode,
+            tags: entry.tags, src: entry.src
+          });
+        }
+      }
+      renderLogTags(); renderLogList();
+    });
+  });
+
+  // 編集キャンセル
+  el.querySelectorAll('.lef-cancel').forEach(b=>{
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      const form = document.getElementById('lef-'+b.dataset.id); if(!form) return;
+      form.classList.remove('open');
+      const editBtn = el.querySelector(`.log-edit-btn[data-id="${b.dataset.id}"]`);
+      if(editBtn) editBtn.textContent='✎';
+    });
+  });
+
+  // 削除申請ボタン
+  el.querySelectorAll('.log-report-btn').forEach(b=>{
+    b.addEventListener('click', e=>{ e.stopPropagation(); openLogReportModal(b.dataset.id, b.dataset.quote); });
+  });
+}
+
+document.getElementById('subBtn').addEventListener('click', async()=>{
+  const quote   = document.getElementById('subQuote').value.trim();
+  const episode = document.getElementById('subEpisode').value.trim();
+  const tagsRaw = document.getElementById('subTags').value.trim();
+  const vidUrl  = document.getElementById('subVideo').value.trim();
+  const msg     = document.getElementById('subMsg');
+
+  if(!quote){
+    msg.textContent='⚠ 発言内容を入力してください。'; msg.style.color='var(--pink)'; msg.style.display='inline'; return;
+  }
+  // 長さバリデーション
+  if(quote.length > 1000){
+    msg.textContent='⚠ 発言内容は1000文字以内にしてください。'; msg.style.color='var(--pink)'; msg.style.display='inline'; return;
+  }
+  // URLバリデーション（YouTubeのみ許可）
+  if(vidUrl && !vidUrl.match(/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//)){
+    msg.textContent='⚠ 動画URLはYouTubeのURLのみ入力できます。'; msg.style.color='var(--pink)'; msg.style.display='inline'; return;
+  }
+  const tags = tagsRaw ? tagsRaw.split(',').map(t=>t.trim().slice(0,30)).filter(Boolean).slice(0,10) : [];
+  const row = {
+    episode: episode.slice(0,100),
+    quote: quote.slice(0,1000),
+    tags,
+    youtube_url: vidUrl||null,
+    video_id: null,
+  };
+  if(vidUrl){
+    const vid = extractYtId(vidUrl);
+    if(vid){ const m=VIDEOS.find(v=>v.youtubeId===vid); if(m) row.video_id=m.id; }
+  }
+  await sbInsert('user_logs', row);
+  await loadUserLogs();
+  ['subQuote','subEpisode','subTags','subVideo'].forEach(id=>document.getElementById(id).value='');
+  msg.textContent='✓ 投稿しました！ありがとうございます。'; msg.style.color='var(--mint)'; msg.style.display='inline';
+  setTimeout(()=>msg.style.display='none', 3500);
+  renderLogTags(); renderLogList();
+});
+
+/* ══════════════════════════════
+   LOG REPORT MODAL & ADMIN PANEL
+══════════════════════════════ */
+let logReportTargetId = null;
+let logAdminUnlocked = false;
+let LOG_REPORTS = [];
+
+async function loadLogReports(){
+  LOG_REPORTS = await sbGetAll('log_reports');
+}
+async function saveLogReports(){ /* Supabase版では個別操作のため不使用 */ }
+
+function openLogReportModal(entryId, quotePreview){
+  logReportTargetId = entryId;
+  document.getElementById('logReportTargetQuote').textContent = '「' + quotePreview + (quotePreview.length>=60?'…':'') + '」';
+  document.getElementById('logReportReason').value = '';
+  document.getElementById('logReportModal').classList.add('open');
+}
+document.getElementById('logReportClose').onclick   = ()=>document.getElementById('logReportModal').classList.remove('open');
+document.getElementById('logReportCancelBtn').onclick = ()=>document.getElementById('logReportModal').classList.remove('open');
+document.getElementById('logReportSubmitBtn').addEventListener('click', async()=>{
+  if(!logReportTargetId) return;
+  const reason = document.getElementById('logReportReason').value.trim();
+  await loadLogReports();
+  if(LOG_REPORTS.some(r=>r.entry_id===logReportTargetId && r.status==='pending')){
+    document.getElementById('logReportModal').classList.remove('open');
+    showToast('この発言はすでに申請済みです'); return;
+  }
+  const all = allLogs();
+  const entry = all.find(e=>e.id===logReportTargetId);
+  const quoteSnip = entry ? entry.quote.slice(0,50) : '';
+  await sbInsert('log_reports', {
+    entry_id: logReportTargetId,
+    quote: quoteSnip, is_official: entry ? !!entry.isOfficial : false,
+    reason: reason||'（理由なし）',
+    status: 'pending'
+  });
+  await loadLogReports();
+  document.getElementById('logReportModal').classList.remove('open');
+  showToast('削除申請を送信しました 🙏');
+  logReportTargetId = null;
+});
+
+// 発言集管理人パネル
+document.getElementById('logAdminToggleBtn').addEventListener('click',()=>{
+  const panel = document.getElementById('logAdminPanel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open') && logAdminUnlocked){ renderLogAdminReports(); renderTagAdminReports('log'); }
+});
+document.getElementById('logAdminLoginBtn').addEventListener('click', async()=>{
+  const email = document.getElementById('logAdminEmail').value.trim();
+  const pw    = document.getElementById('logAdminPw').value;
+  const { data, error } = await _sb.auth.signInWithPassword({ email, password: pw });
+  if(!error && data.session){
+    logAdminUnlocked = true;
+    document.getElementById('logAdminLoginArea').style.display='none';
+    document.getElementById('logAdminContent').style.display='block';
+    document.getElementById('logAdminPwErr').style.display='none';
+    await loadLogReports(); await loadTagReports(); renderLogAdminReports(); renderTagAdminReports('log');
+  } else {
+    document.getElementById('logAdminPwErr').style.display='inline';
+    document.getElementById('logAdminPw').value='';
+  }
+});
+document.getElementById('logAdminPw').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('logAdminLoginBtn').click(); });
+document.getElementById('logAdminLogoutBtn').addEventListener('click', async()=>{
+  await _sb.auth.signOut();
+  logAdminUnlocked = false;
+  document.getElementById('logAdminLoginArea').style.display='flex';
+  document.getElementById('logAdminContent').style.display='none';
+  document.getElementById('logAdminPw').value='';
+  document.getElementById('logAdminEmail').value='';
+  document.getElementById('logAdminPanel').classList.remove('open');
+});
+
+function renderLogAdminReports(){
+  const list = document.getElementById('logAdminReportList');
+  const pending = LOG_REPORTS.filter(r=>r.status==='pending');
+  if(!pending.length){
+    list.innerHTML=`<div class="admin-empty">削除申請はありません ✨</div>`; return;
+  }
+  list.innerHTML = pending.map(r=>`
+    <div class="report-item" data-rid="${r.id}">
+      <div class="report-item-info">
+        <div class="report-item-title">${r.is_official?'📌 公式':'💬 ファン'}「${h(r.quote)}…」</div>
+        <div class="report-item-reason">理由：${h(r.reason)}</div>
+        <div class="report-item-date">申請日：${h(r.created_at ? new Date(r.created_at).toLocaleDateString('ja-JP') : '')}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.4rem;">
+        <button class="report-delete-btn" data-rid="${r.id}" data-eid="${r.entry_id}" data-official="${r.is_official?'1':'0'}">削除実行</button>
+        <button class="report-dismiss-btn" data-rid="${r.id}">却下</button>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.report-delete-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      if(!confirm('この発言を削除しますか？')) return;
+      if(b.dataset.official==='1'){
+        const idx = LOG_ENTRIES.findIndex(e=>e.id===b.dataset.eid);
+        if(idx!==-1) LOG_ENTRIES.splice(idx,1);
+      } else {
+        await sbDelete('user_logs', b.dataset.eid);
+        await loadUserLogs();
+      }
+      await sbUpdate('log_reports', b.dataset.rid, {status:'deleted'});
+      await loadLogReports();
+      renderLogTags(); renderLogList(); renderLogAdminReports();
+      showToast('削除しました');
+    });
+  });
+  list.querySelectorAll('.report-dismiss-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      await sbUpdate('log_reports', b.dataset.rid, {status:'dismissed'});
+      await loadLogReports(); renderLogAdminReports();
+      showToast('申請を却下しました');
+    });
+  });
+}
+
+(async()=>{ await loadUserLogs(); renderLogTags(); renderLogList(); })();
+
+/* ══════════════════════════════
+   KONAMI CODE → 管理人パネル解放
+══════════════════════════════ */
+(()=>{
+  const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let pos = 0;
+  document.addEventListener('keydown', e=>{
+    if(e.key === KONAMI[pos]) {
+      pos++;
+      if(pos === KONAMI.length){
+        pos = 0;
+        // 両パネルのトグルボタンを表示
+        document.getElementById('adminToggleBtn').closest('.admin-toggle-row').style.display='flex';
+        document.getElementById('logAdminToggleBtn').closest('.admin-toggle-row').style.display='flex';
+        showToast('🔑 管理人モード解放');
+      }
+    } else {
+      pos = 0;
+      // 最初のキーと一致する場合は再チェック
+      if(e.key === KONAMI[0]) pos = 1;
+    }
+  });
+})();
+
+/* ══════════════════════════════
+   INTERSECTION OBSERVER
+══════════════════════════════ */
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.08});
+document.querySelectorAll('.fade-in').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
