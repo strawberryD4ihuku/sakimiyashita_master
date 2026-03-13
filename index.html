@@ -135,8 +135,14 @@ nav {
   paint-order: stroke fill;
   position: relative; z-index: 1;
   animation: popIn 0.55s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
-  /* colored outline effect via text-shadow */
   text-shadow: 3px 3px 0 var(--ink);
+}
+@media(max-width:768px){
+  .hero-title {
+    -webkit-text-stroke: 1px var(--ink);
+    text-shadow: 2px 2px 0 var(--ink);
+    font-weight: 800;
+  }
 }
 
 .hero-sub {
@@ -292,6 +298,7 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   background: var(--ink);
   gap: 2px;
 }
+.cal-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .cal-head {
   background: var(--pink); color: var(--white);
   text-align: center; padding: 0.5rem;
@@ -301,8 +308,9 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   background: var(--white); min-height: 82px; padding: 0.4rem;
 }
 @media(max-width:768px){
-  .cal-cell { min-height: 56px; padding: 0.25rem; }
-  .cal-event { font-size: 0.5rem; padding: 0.08rem 0.2rem;
+  .cal-grid { min-width: 560px; }
+  .cal-cell { min-height: 64px; padding: 0.3rem; }
+  .cal-event { font-size: 0.52rem; padding: 0.08rem 0.2rem;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     max-width: 100%;
   }
@@ -918,7 +926,9 @@ async function sbDelete(table, id){
       <div class="cal-month-label" id="calLabel"></div>
       <button class="cal-arrow" id="calNext">▶</button>
     </div>
-    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-scroll-wrap">
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
     <p class="cal-notice" id="calNotice">この月の登録済みイベントはありません。</p>
   </div>
 </section>
