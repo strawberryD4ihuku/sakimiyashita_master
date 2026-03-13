@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪼</text></svg>">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪼%3C/text%3E%3C/svg%3E">
 <title>宮下Fan!</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1738,13 +1738,13 @@ document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; 
 
 async function loadUserVideos(){
   const rows = await sbGetAll('user_videos');
-  // Supabase保存分をVIDEOSの先頭に追加（HTMLのv*と重複しないもののみ）
   const htmlIds = new Set(VIDEOS.map(v=>v.id));
   rows.forEach(r=>{
     if(!htmlIds.has(r.id)){
-      VIDEOS.unshift({ id:r.id, youtubeId:r.youtube_id, title:r.title, date:r.date, tags:r.tags||[], desc:r.description||'' });
+      VIDEOS.push({ id:r.id, youtubeId:r.youtube_id, title:r.title, date:r.date, tags:r.tags||[], desc:r.description||'' });
     }
   });
+  VIDEOS.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 }
 (async()=>{ await loadUserVideos(); renderVidTags(); renderVidGrid(); })();
 
