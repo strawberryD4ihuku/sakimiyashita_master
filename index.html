@@ -686,8 +686,8 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   position: relative;
 }
 .log-entry:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-m); }
-.log-meta { min-width: 88px; font-size: 0.68rem; font-weight: 700; color: var(--purple); padding-top: 2px; line-height: 1.5; }
-.log-body { flex: 1; }
+.log-meta { min-width: 88px; max-width: 110px; word-break: keep-all; font-size: 0.68rem; font-weight: 700; color: var(--purple); padding-top: 2px; line-height: 1.5; }
+.log-body { flex: 1; min-width: 0; overflow-wrap: break-word; }
 @media(max-width:768px){
   .log-entry { flex-direction: column; gap: 0.5rem; }
   .log-meta { min-width: unset; padding-top: 0; }
@@ -707,6 +707,7 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   border-left: 4px solid var(--yellow);
   border-radius: 0 8px 8px 0;
   margin-bottom: 0.55rem;
+  display: block; width: 100%; box-sizing: border-box;
 }
 .log-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 .log-tag {
@@ -938,7 +939,6 @@ async function sbDelete(table, id){
     <li><a href="javascript:void(0)" onclick="navTo('schedule')">イベント出演予定</a></li>
     <li><a href="javascript:void(0)" onclick="navTo('videos')">動画館</a></li>
     <li><a href="javascript:void(0)" onclick="navTo('taglog')">発言集</a></li>
-    <li><a href="https://x.com/yuri333yuri" target="_blank" rel="noopener">お問い合わせ</a></li>
   </ul>
 </nav>
 
@@ -1461,7 +1461,7 @@ function renderWorks(){
     grid.innerHTML=`<p style="color:var(--ink);font-size:0.82rem;font-weight:700;padding:2rem 0;">該当する作品がありません。</p>`;
     toggle.innerHTML=''; return;
   }
-  const LIMIT = 20;
+  const LIMIT = window.innerWidth <= 768 ? 10 : 20;
   const expanded = grid.dataset.expanded === 'true';
   const shown = expanded ? list : list.slice(0, LIMIT);
   grid.innerHTML = shown.map(w=>`
@@ -1535,20 +1535,20 @@ function renderCal(){
             🎤 ${h(e.text)}
           </div>
           ${e.time ? '<div style="font-size:0.75rem;font-weight:700;color:var(--purple);margin-bottom:0.3rem;">🕐 ' + h(e.time) + '</div>' : ''}
-          ${e.detail ? '<div class="cal-modal-detail">' + h(e.detail).replace(/@([A-Za-z0-9_]+)/g, '<a href="https://x.com/$1" target="_blank" rel="noopener" class="cal-modal-link">@$1</a>').replace(/https?:\/\/[^\s<]+/g, u=>`<a href="${u}" target="_blank" rel="noopener" class="cal-modal-link">${u}</a>`) + '</div>' : ''}
+          ${e.detail ? '<div class="cal-modal-detail">' + e.detail.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/https?:\/\/[^\s<"]+/g, u=>`<a href="${u}" target="_blank" rel="noopener" class="cal-modal-link">${u}</a>`).replace(/@([A-Za-z0-9_]+)/g, (m,p1)=> m.includes("x.com") ? m : `<a href="https://x.com/${p1}" target="_blank" rel="noopener" class="cal-modal-link">@${p1}</a>`) + '</div>' : ''}
           ${e.url ? '<a href="' + h(e.url) + '" target="_blank" rel="noopener" class="cal-modal-link">🔗 公式ページ</a>' : ''}
         </div>`;
       }).join('')
-      document.getElementById('calModal').classList.add('open');
+      document.getElementById('calModal').classList.add('open'); document.body.style.overflow='hidden';
     });
   });
   const hasEv = Object.keys(SCHEDULE).some(k=>k.startsWith(`${calY}-${String(calM+1).padStart(2,'0')}-`));
   document.getElementById('calNotice').style.display = hasEv?'none':'block';
 }
-document.getElementById('calModalClose').onclick = ()=>document.getElementById('calModal').classList.remove('open');
+document.getElementById('calModalClose').onclick = ()=>{ document.getElementById('calModal').classList.remove('open'); document.body.style.overflow=''; };
 document.getElementById('calModal').addEventListener('click', e=>{
   if(e.target===document.getElementById('calModal'))
-    document.getElementById('calModal').classList.remove('open');
+    document.getElementById('calModal').classList.remove('open'); document.body.style.overflow='';
 });
 document.getElementById('calPrev').onclick=()=>{ calM--; if(calM<0){calM=11;calY--;} renderCal(); };
 document.getElementById('calNext').onclick=()=>{ calM++; if(calM>11){calM=0;calY++;} renderCal(); };
@@ -2012,6 +2012,21 @@ document.getElementById('vidModal').addEventListener('click', e=>{ if(e.target==
 let activeLogTag = null;
 let USER_LOGS = [];
 
+function getAllLogTags(){
+  const official = LOG_ENTRIES.flatMap(e=>e.tags||[]);
+  const user = USER_LOGS.flatMap(e=>e.tags||[]);
+  return [...new Set([...official, ...user])];
+}
+function renderLogTagPills(e){
+  return (e.tags||[]).map(t=>
+    `<span class="log-tag-wrap2">` +
+    `<span class="log-tag" data-t="${h(t)}">${h(t)}</span>` +
+    `<button class="log-tag-rpt" data-t="${h(t)}" data-eid="${h(e.id||'')}"` +
+    ` data-title="${h((e.quote||'').slice(0,30))}" title="このタグを申請">🏷</button>` +
+    `</span>`
+  ).join('');
+}
+
 async function loadUserLogs(){
   USER_LOGS = await sbGetAll('user_logs');
 }
@@ -2031,11 +2046,11 @@ function allLogs(){
     })),
   ];
 }
-function allLogTags(){ return [...new Set(allLogs().flatMap(e=>e.tags))]; }
+function getAllLogTags(){ return [...new Set(allLogs().flatMap(e=>e.tags))]; }
 
 function renderLogTags(){
   const row = document.getElementById('logTagRow');
-  row.innerHTML = ['すべて',...allLogTags()].map(t=>`
+  row.innerHTML = ['すべて',...getAllLogTags()].map(t=>`
     <button class="${t==='すべて'?'log-pill':'log-pill'}${(t==='すべて'&&!activeLogTag)||(activeLogTag===t)?' active':''}" data-t="${h(t)}">${h(t)}</button>
   `).join('');
   row.querySelectorAll('.log-pill').forEach(b=>{
