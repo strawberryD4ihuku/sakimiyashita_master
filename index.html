@@ -1737,7 +1737,9 @@ document.getElementById('addCancelBtn').addEventListener('click',()=>{
 document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; renderVidGrid(); });
 
 async function loadUserVideos(){
-  const rows = await sbGetAll('user_videos');
+  const { data, error } = await _sb.from('user_videos').select('*').order('date', { ascending: false });
+  if(error){ console.error('user_videos', error.message); return; }
+  const rows = data ?? [];
   const htmlIds = new Set(VIDEOS.map(v=>v.id));
   rows.forEach(r=>{
     if(!htmlIds.has(r.id)){
