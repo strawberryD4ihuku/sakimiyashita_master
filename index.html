@@ -308,11 +308,12 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   background: var(--white); min-height: 72px; padding: 0.4rem;
   cursor: default; position: relative;
 }
-.cal-cell.has-event { cursor: pointer; background: var(--yellow-lt); }
-.cal-cell.has-event:active { background: var(--yellow); }
+.cal-cell.has-event { cursor: pointer; background: #f2a4c4; }
+.cal-cell.has-event .cal-day { color: #5a1a35; font-weight: 900; }
+.cal-cell.has-event:active { background: #e88aad; }
 .cal-event-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--pink); border: 1.5px solid var(--ink);
+  background: #5a1a35; border: 1.5px solid #5a1a35;
   margin: 2px auto 0;
 }
 @media(max-width:768px){
@@ -556,7 +557,11 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   display: flex; gap: 1rem; align-items: flex-start;
 }
 .report-item-info { flex: 1; min-width: 0; }
-.report-item-title { font-size: 0.78rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.report-item-title {
+  font-size: 0.78rem; font-weight: 700; color: var(--white);
+  margin-bottom: 0.25rem; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
 .report-item-reason { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-bottom: 0.2rem; line-height: 1.5; }
 .report-item-date { font-size: 0.62rem; color: rgba(255,255,255,0.28); }
 .report-delete-btn {
@@ -829,6 +834,65 @@ footer a:hover { color: var(--white); }
   .video-grid { grid-template-columns: 1fr; }
   .submit-row-2 { grid-template-columns: 1fr; }
 }
+
+/* ════ MODAL UTILITY CLASSES ════ */
+.modal-sub-title {
+  font-size: 0.78rem; font-weight: 700;
+  color: rgba(255,255,255,0.7); margin-bottom: 1rem;
+}
+.modal-sub-title--bg {
+  color: rgba(255,255,255,0.75);
+  padding: 0.45rem 0.7rem;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px; margin-bottom: 0.5rem;
+}
+.modal-tag-name {
+  font-size: 0.88rem; font-weight: 800;
+  color: var(--yellow);
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px; margin-bottom: 0.8rem;
+  letter-spacing: 0.04em;
+}
+.modal-quote-preview {
+  font-size: 0.78rem; font-weight: 700;
+  color: rgba(0,0,0,0.6); margin-bottom: 1rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--yellow-lt);
+  border-radius: 8px;
+  border-left: 3px solid var(--yellow);
+}
+.site-toast {
+  position: fixed; bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  background: var(--pink); color: #fff;
+  font-family: var(--ff); font-weight: 800; font-size: 0.82rem;
+  padding: 0.65rem 1.4rem; border-radius: 99px;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+  z-index: 999; opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none; white-space: nowrap;
+}
+
+/* ════ CAL MODAL ════ */
+.cal-modal-event-card {
+  border: 2px solid var(--ink); border-radius: 10px;
+  padding: 0.8rem 1rem; margin-bottom: 0.7rem;
+}
+.cal-modal-detail {
+  font-size: 0.75rem; line-height: 1.7; color: #444;
+  white-space: pre-line; margin-bottom: 0.4rem;
+}
+.cal-modal-link {
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--sky); word-break: break-all;
+}
+/* ════ TAG PILL GHOST ════ */
+.tag-pill--ghost {
+  cursor: default;
+  border-color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.7);
+}
 </style>
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -871,9 +935,10 @@ async function sbDelete(table, id){
   <a class="nav-logo" href="javascript:void(0)" onclick="navTo('hero')">宮下<span>Fan!</span></a>
   <ul class="nav-links">
     <li><a href="javascript:void(0)" onclick="navTo('works')">出演作品</a></li>
-    <li><a href="javascript:void(0)" onclick="navTo('schedule')">出演予定</a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('schedule')">イベント出演予定</a></li>
     <li><a href="javascript:void(0)" onclick="navTo('videos')">動画館</a></li>
     <li><a href="javascript:void(0)" onclick="navTo('taglog')">発言集</a></li>
+    <li><a href="https://x.com/yuri333yuri" target="_blank" rel="noopener">お問い合わせ</a></li>
   </ul>
 </nav>
 
@@ -914,6 +979,7 @@ async function sbDelete(table, id){
     </div>
     <div class="works-year-row" id="worksYearRow"></div>
     <div class="works-grid" id="worksGrid"></div>
+    <div class="pager-row" id="worksPager"></div>
   </div>
 </section>
 
@@ -922,7 +988,7 @@ async function sbDelete(table, id){
   <div class="section-inner">
     <div class="sec-head">
       <span class="sec-label">✦ Schedule</span>
-      <h2 class="sec-title">出演予定</h2>
+      <h2 class="sec-title">イベント出演予定</h2>
     </div>
     <div class="cal-nav">
       <button class="cal-arrow" id="calPrev">◀</button>
@@ -1024,7 +1090,7 @@ async function sbDelete(table, id){
     <button class="rm-close" id="reportClose">✕</button>
     <h3>🚩 削除申請</h3>
     <p>この動画の削除を管理人に申請します。<br>申請は管理人が確認後に処理されます。</p>
-    <div id="reportTargetTitle" style="font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:1rem;padding:0.5rem 0.8rem;background:rgba(255,255,255,0.07);border-radius:8px;"></div>
+    <div id="reportTargetTitle" class="modal-sub-title" style="padding:0.5rem 0.8rem;background:rgba(255,255,255,0.07);border-radius:8px;"></div>
     <label>申請理由（任意）</label>
     <textarea id="reportReason" placeholder="例：URLが間違っている / 重複している など"></textarea>
     <div class="rm-btns">
@@ -1126,11 +1192,11 @@ async function sbDelete(table, id){
     <p>このタグの削除を管理人に申請します。</p>
     <div style="margin-bottom:1rem;">
       <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:0.25rem;">対象エントリー</div>
-      <div id="tagReportEntryTitle" style="font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.75);padding:0.45rem 0.8rem;background:rgba(255,255,255,0.07);border-radius:7px;"></div>
+      <div id="tagReportEntryTitle" class="modal-sub-title modal-sub-title--bg"></div>
     </div>
     <div style="margin-bottom:1rem;">
       <div style="font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:0.25rem;">削除するタグ</div>
-      <div id="tagReportTagName" style="font-size:0.88rem;font-weight:800;color:var(--yellow);padding:0.4rem 0.8rem;background:rgba(240,196,48,0.1);border:1.5px solid rgba(240,196,48,0.3);border-radius:7px;display:inline-block;"></div>
+      <div id="tagReportTagName" class="modal-tag-name"></div>
     </div>
     <label>申請理由（任意）</label>
     <textarea id="tagReportReason" placeholder="例：タイポ / 内容と無関係 / 重複している など"></textarea>
@@ -1145,7 +1211,7 @@ async function sbDelete(table, id){
     <button class="rm-close" id="logReportClose">✕</button>
     <h3>🚩 削除申請（発言集）</h3>
     <p>この発言の削除を管理人に申請します。<br>申請は管理人が確認後に処理されます。</p>
-    <div id="logReportTargetQuote" style="font-size:0.78rem;font-weight:700;color:rgba(0,0,0,0.6);margin-bottom:1rem;padding:0.6rem 0.9rem;background:rgba(0,0,0,0.06);border-radius:8px;line-height:1.6;max-height:80px;overflow:hidden;text-overflow:ellipsis;"></div>
+    <div id="logReportTargetQuote" class="modal-quote-preview"></div>
     <label>申請理由（任意）</label>
     <textarea id="logReportReason" placeholder="例：引用元が違う / 内容が不正確 など"></textarea>
     <div class="rm-btns">
@@ -1159,7 +1225,8 @@ async function sbDelete(table, id){
 <footer>
   <span class="foot-logo">宮下Fan!</span>
   Fan-made, not affiliated with official organizations.<br>
-  公式情報は <a href="https://x.com/SAKI_MIYASHITA" target="_blank">公式X（@SAKI_MIYASHITA）</a> をご確認ください。
+  公式情報は <a href="https://x.com/SAKI_MIYASHITA" target="_blank">公式X（@SAKI_MIYASHITA）</a> をご確認ください。<br>
+  お問い合わせは <a href="https://x.com/yuri333yuri" target="_blank" rel="noopener">@yuri333yuri</a> までご連絡ください。
 </footer>
 
 <script>
@@ -1185,65 +1252,154 @@ function navTo(id){
    DATA
 ══════════════════════════════ */
 const WORKS = [
-  { title:"貴族転生 ～恵まれた生まれから最強の力を得る～", role:"ゾーイ",          type:"anime", year:"2026" },
-  { title:"鎧真伝サムライトルーパー",                     role:"子供",             type:"anime", year:"2026" },
-  { title:"魔女ガミ－The Witch of Luludidea－",           role:"カルマ",           type:"game",  year:"2025" },
-  { title:"スターセイヴァー",                             role:"エピンデル",       type:"game",  year:"2025〜" },
-  { title:"サラリーマンが異世界に行ったら四天王になった話", role:"キャットシーB",   type:"anime", year:"2025" },
-  { title:"ヴァージン・パンク Clockwork Girl（映画）",    role:"神氷羽舞",         type:"anime", year:"2025" },
-  { title:"神之塔 -Tower of God-",                        role:"マナ",             type:"anime", year:"2024" },
+  { title:"貴族転生 ～恵まれた生まれから最強の力を得る～",                    role:"ゾーイ",              type:"anime", year:"2026" },
+  { title:"鎧真伝サムライトルーパー",                                           role:"子供",               type:"anime", year:"2026" },
+  { title:"魔女ガミ－The Witch of Luludidea－",                                 role:"カルマ",             type:"game",  year:"2025" },
+  { title:"スターセイヴァー",                                                   role:"エピンデル",         type:"game",  year:"2025" },
+  { title:"サラリーマンが異世界に行ったら四天王になった話",                     role:"キャットシーB",      type:"anime", year:"2025" },
+  { title:"ヴァージン・パンク Clockwork Girl（劇場アニメ）",                    role:"神氷羽舞",           type:"anime", year:"2025" },
+  { title:"神之塔 -Tower of God-",                                               role:"マナ",               type:"anime", year:"2024" },
   { title:"ハズレ枠の【状態異常スキル】で最強になった俺がすべてを蹂躙するまで", role:"セラス・アシュレイン", type:"anime", year:"2024" },
-  { title:"妖怪学校の先生はじめました！",                 role:"みーくん（少年佐野）", type:"anime", year:"2024" },
-  { title:"ウマ娘 プリティーダービー",                    role:"スティルインラブ", type:"game",  year:"2024〜" },
-  { title:"好きな子がめがねを忘れた",                     role:"火渕結衣花",       type:"anime", year:"2023" },
-  { title:"夫婦以上、恋人未満。",                         role:"桜坂詩織",         type:"anime", year:"2022" },
-  { title:"ヘブンバーンズレッド",                         role:"蒼井えりか",       type:"game",  year:"2022〜2024" },
-  { title:"機動戦士ガンダム U.C. ENGAGE",                 role:"ミネバ・ラオ・ザビ",type:"game",  year:"2022〜2025" },
-  { title:"装甲娘戦機",                                   role:"スズノ",           type:"anime", year:"2021" },
-  { title:"探偵はもう、死んでいる。",                     role:"シエスタ",         type:"anime", year:"2021" },
-  { title:"ワンダーエッグ・プライオリティ",               role:"吉田ヤエ",         type:"anime", year:"2021" },
-  { title:"Paradigm Paradox",                             role:"カオリ",           type:"game",  year:"2021" },
-  { title:"探偵はもう、死んでいる。 ドラマCD",           role:"ナレーター",       type:"drama", year:"2021" },
-  { title:"三角の距離は限りないゼロ ボイスドラマ",       role:"須藤伊津佳",       type:"drama", year:"2021" },
-  { title:"東方LostWord",                                 role:"大妖精 他",        type:"game",  year:"2020〜" },
-  { title:"荒野のコトブキ飛行隊",                         role:"姐さん",           type:"anime", year:"2019" },
-  { title:"ひとりぼっちの○○生活",                        role:"小篠咲真世",       type:"anime", year:"2019" },
-  { title:"放課後さいころ倶楽部",                         role:"武笠美姫",         type:"anime", year:"2019" },
-  { title:"モンスターストライク",                         role:"ベガ 他",          type:"game",  year:"2019〜2024" },
-  { title:"荒野のコトブキ飛行隊 大空のテイクオフガールズ!", role:"姐さん",          type:"game",  year:"2019" },
-  { title:"はるかなレシーブ",                             role:"比嘉かなた",       type:"anime", year:"2018" },
+  { title:"妖怪学校の先生はじめました！",                                       role:"みーくん（少年佐野）", type:"anime", year:"2024" },
+  { title:"ウマ娘 プリティーダービー",                                           role:"スティルインラブ",   type:"game",  year:"2024" },
+  { title:"ウマ娘 プリティーダービー 熱血ハチャメチャ大感謝祭!",               role:"スティルインラブ",   type:"game",  year:"2024" },
+  { title:"魔女のふろーらいふ",                                                 role:"方丈千莉",           type:"game",  year:"2024" },
+  { title:"クッキーラン：キングダム",                                           role:"玉春味クッキー",     type:"game",  year:"2024" },
+  { title:"クレヨンしんちゃん",                                                 role:"ギャルA",            type:"anime", year:"2023" },
+  { title:"好きな子がめがねを忘れた",                                           role:"火渕結衣花",         type:"anime", year:"2023" },
+  { title:"FORTUNE TRINITY 時空のダイヤモンド",                                 role:"サニー",             type:"game",  year:"2023" },
+  { title:"夫婦以上、恋人未満。",                                               role:"桜坂詩織",           type:"anime", year:"2022" },
+  { title:"ヘブンバーンズレッド",                                               role:"蒼井えりか",         type:"game",  year:"2022〜2025" },
+  { title:"機動戦士ガンダム U.C. ENGAGE",                                       role:"ミネバ・ラオ・ザビ", type:"game",  year:"2022〜2025" },
+  { title:"けものフレンズ3",                                                    role:"コウノトリ",         type:"game",  year:"2022" },
+  { title:"装甲娘戦機",                                                         role:"スズノ",             type:"anime", year:"2021" },
+  { title:"探偵はもう、死んでいる。",                                           role:"シエスタ",           type:"anime", year:"2021" },
+  { title:"ワンダーエッグ・プライオリティ",                                     role:"吉田ヤエ",           type:"anime", year:"2021" },
+  { title:"ホリミヤ",                                                           role:"女子高校生",         type:"anime", year:"2021" },
+  { title:"うらみちお兄さん",                                                   role:"子供",               type:"anime", year:"2021" },
+  { title:"小林さんちのメイドラゴンS",                                          role:"村の少年",           type:"anime", year:"2021" },
+  { title:"舞妓さんちのまかないさん",                                           role:"舞妓",               type:"anime", year:"2021" },
+  { title:"Paradigm Paradox",                                                   role:"カオリ",             type:"game",  year:"2021" },
+  { title:"少女キャリバー.io",                                                   role:"エクスカリバー",     type:"game",  year:"2021" },
+  { title:"共闘ことばRPG コトダマン",                                           role:"テイサチュウバツ",   type:"game",  year:"2021" },
+  { title:"探偵はもう、死んでいる。 ドラマCD",                                 role:"ナレーター",         type:"drama", year:"2021" },
+  { title:"三角の距離は限りないゼロ ボイスドラマ",                             role:"須藤伊津佳",         type:"drama", year:"2021" },
+  { title:"東方LostWord",                                                       role:"大妖精 他",          type:"game",  year:"2020" },
+  { title:"マギアレコード 魔法少女まどか☆マギカ外伝",                          role:"クラスメイト",       type:"anime", year:"2020" },
+  { title:"トミカ絆合体 アースグランナー",                                      role:"澤藤リョーコ 他",    type:"anime", year:"2020" },
+  { title:"恋とプロデューサー〜EVOL×LOVE〜",                                   role:"女子生徒",           type:"anime", year:"2020" },
+  { title:"あひるの空",                                                         role:"女子生徒",           type:"anime", year:"2020" },
+  { title:"荒野のコトブキ飛行隊",                                               role:"姐さん",             type:"anime", year:"2019" },
+  { title:"ひとりぼっちの○○生活",                                              role:"小篠咲真世",         type:"anime", year:"2019" },
+  { title:"ヴィンランド・サガ",                                                 role:"子供",               type:"anime", year:"2019" },
+  { title:"放課後さいころ倶楽部",                                               role:"武笠美姫",           type:"anime", year:"2019" },
+  { title:"モンスターストライク",                                               role:"ベガ 他",            type:"game",  year:"2019〜2024" },
+  { title:"荒野のコトブキ飛行隊 大空のテイクオフガールズ!",                     role:"姐さん",             type:"game",  year:"2019" },
+  { title:"アクション対魔忍",                                                   role:"星乃深月",           type:"game",  year:"2019" },
+  { title:"Project NOAH",                                                       role:"エルシェ・リオハス", type:"game",  year:"2019" },
+  { title:"ペルソナ5 ザ・ロイヤル",                                             role:"",                   type:"game",  year:"2019" },
+  { title:"墜落JKと廃人教師 ドラマCD",                                         role:"",                   type:"drama", year:"2019" },
+  { title:"はるかなレシーブ",                                                   role:"比嘉かなた",         type:"anime", year:"2018" },
+  { title:"PERSONA5 the Animation",                                             role:"女子生徒A 他",       type:"anime", year:"2018" },
+  { title:"クイズRPG 魔法使いと黒猫のウィズ",                                  role:"セツナ",             type:"game",  year:"2018" },
+  { title:"きららファンタジア",                                                 role:"比嘉かなた",         type:"game",  year:"2018〜2022" },
+  { title:"モン娘☆は〜れむ",                                                   role:"ホワイトリリー",     type:"game",  year:"2017" },
+  { title:"幻獣姫",                                                             role:"ヒノカグツチ",       type:"game",  year:"2017" },
+  { title:"時間の支配者",                                                       role:"女性B",              type:"anime", year:"2017" },
+  { title:"アニメガタリズ",                                                     role:"コンパニオン",       type:"anime", year:"2017" },
+  { title:"アイカツスターズ!",                                                  role:"生徒",               type:"anime", year:"2016" },
+  { title:"チェインクロニクル",                                                 role:"チムニィ",           type:"game",  year:"2016" },
+  { title:"刻のイシュタリア",                                                   role:"ルリム 他",          type:"game",  year:"2016" },
+  { title:"ワールドチェイン",                                                   role:"ラクシュミー・バーイー", type:"game", year:"2016" },
 ];
 
 const TODAY = new Date();
+const OFUREKO_DETAIL = "【公式より引用】\n" +
+  "『土曜日はオフレコでお願いします！ホワイトデースペシャル』\n" +
+  "今をときめく人気声優が登場し、ここだけでしか聴けないオフレコトークを楽しんでいただく" +
+  "生放送番組「日曜日はオフレコでお願いします！」が、特別編として心斎橋PARCOで開催いたします。\n" +
+  "【昼の部】【夜の部】の2部制でお届けします。\n" +
+  "《出演者》\n咲々木瞳／星谷美緒／宮下早紀／野木奏\nMC：小早川秀樹";
 const SCHEDULE = {
   "2026-03-14": [
     { text:"土曜日はオフレコでお願いします！ ホワイトデースペシャル 昼の部", type:"live",
-      time:"開場12:00 / 開演13:00", detail:"バレンタインデーに続くホワイトデースペシャル公演。昼の部。" },
+      time:"【開場】13:15 【開演】14:00",
+      detail:OFUREKO_DETAIL,
+      url:"https://shinsaibashi.parco.jp/space14/information/detail/?id=36268" },
     { text:"土曜日はオフレコでお願いします！ ホワイトデースペシャル 夜の部", type:"live",
-      time:"開場17:00 / 開演18:00", detail:"バレンタインデーに続くホワイトデースペシャル公演。夜の部。" },
+      time:"【開場】16:45 【開演】17:30",
+      detail:OFUREKO_DETAIL,
+      url:"https://shinsaibashi.parco.jp/space14/information/detail/?id=36268" },
   ],
   "2026-03-22": [
     { text:"北海道ベストフレンドパーク（優木かな・宮下早紀）1部", type:"live",
-      time:"開場11:30 / 開演12:00", detail:"優木かなさんとのユニットイベント。北海道開催。1部公演。" },
+      time:"【開場】12:30 【開演】13:00",
+      detail:"【会場】札幌国際交流館 ライラックホール\n【住所】札幌市白石区本通16丁目南4-26\n【公式X】@LunaField_T",
+      url:"https://lunafield.jp/hbfp2026/" },
     { text:"北海道ベストフレンドパーク（優木かな・宮下早紀）2部", type:"live",
-      time:"開場15:30 / 開演16:00", detail:"優木かなさんとのユニットイベント。北海道開催。2部公演。" },
+      time:"【開場】16:00 【開演】16:30",
+      detail:"【会場】札幌国際交流館 ライラックホール\n【住所】札幌市白石区本通16丁目南4-26\n【公式X】@LunaField_T",
+      url:"https://lunafield.jp/hbfp2026/" },
   ],
   "2026-03-29": [
     { text:"「AnimeJapan 2026」ポニーキャニオンブース 「貴族転生」ステージ", type:"live",
-      time:"時間未定", detail:"AnimeJapan 2026 東京ビッグサイト開催。ポニーキャニオンブースにて「貴族転生」ステージイベントに出演。" },
+      time:"13:30～14:00",
+      detail:"【場所】ポニーキャニオンブース \"PLAY! PONYCANYON\"：東6ホール J03\n【出演者】奈波果林（ノア・アララート役） 宮下早紀（ゾーイ役） 佐伯伊織（シャーリー・グランズ役） 橘 杏咲（アリーチェ役）\n【YouTubeLIVE】https://youtube.com/live/NdQiEehhyfY",
+      url:"https://special.canime.jp/anime-japan/2026/" },
   ],
 };
 
 let VIDEOS = [
-  { id:"v1",  youtubeId:"KT7LLjvys14",  title:"宮下早紀のStreaming Club #1（初回配信）",                  date:"2024-11-12", tags:["初回","自己紹介","ゲーム実況"],                         desc:"amiami Hobby Channelにて初配信。" },
-  { id:"v2",  youtubeId:"kZ5cQgOLFO4",  title:"宮下早紀のStreaming Club #3《Untitled Goose Game》",       date:"2024-11-26", tags:["Untitled Goose Game","ゲーム実況","コメディ"],            desc:"いたずらガチョウゲームを実況プレイ。" },
-  { id:"v3",  youtubeId:"dQw4w9WgXcQ",  title:"宮下早紀×春花らんのStreaming Club #6《It Takes Two》コラボ",date:"2024-12-10", tags:["It Takes Two","コラボ配信","春花らん"],                  desc:"春花らんさんとの初コラボ配信。協力プレイの楽しさに目覚めた回。" },
-  { id:"v6",  youtubeId:"HFYaHl83Q7A",  title:"Streaming Club 全員コラボ配信《桃太郎電鉄》",             date:"2025-02-24", tags:["全員コラボ","春花らん","湊みや","長月あおい","桃太郎電鉄"],  desc:"4人による初の全員コラボ配信。桃太郎電鉄で対決！" },
-  { id:"v7",  youtubeId:"L729ABmOgmM",  title:"宮下早紀のStreaming Club #33《ASTRONEER》",                date:"2025-06-24", tags:["ASTRONEER","ゲーム実況","探索","クラフト"],               desc:"惑星を舞台にしたクラフト&探索ゲーム『ASTRONEER』をプレイ。" },
-  { id:"v8",  youtubeId:"5PLcVxJjt-Q",  title:"宮下早紀のStreaming Club #41《ヴァレット/VARLET》先行実況",date:"2025-08-26", tags:["ヴァレット","VARLET","新作ゲーム","先行プレイ"],           desc:"8/28発売予定の新作『ヴァレット/VARLET』を先行実況プレイ。" },
-  { id:"v9",  youtubeId:"cy4ezGLJLtE",  title:"宮下早紀のStreaming Club #?《A Dance of Fire and Ice #02》",date:"2025-09-09", tags:["A Dance of Fire and Ice","音ゲー","高難易度"],           desc:"高難易度音楽ゲーム『A Dance of Fire and Ice』の続き。" },
-  { id:"v10", youtubeId:"LgOk0RvuzEY",  title:"宮下早紀のStreaming Club #?《日本事故物件監視協会》",      date:"2025-10-14", tags:["日本事故物件監視協会","ホラーゲーム","ゲーム実況"],         desc:"視聴者リクエストに応えてホラーゲームに挑戦！" },
-  { id:"v11", youtubeId:"ZHB1vBJO648",  title:"Streaming Club 全員コラボ配信《マリオカート ワールド》",   date:"2025-07-06", tags:["全員コラボ","春花らん","湊みや","長月あおい","マリオカート"],desc:"夏の特別コラボ！4人で『マリオカート ワールド』を対決。" },
+  { id:"v1",
+    youtubeId:"KT7LLjvys14",
+    title:"宮下早紀のStreaming Club #1（初回配信）",
+    date:"2024-11-12",
+    tags:["初回","自己紹介","ゲーム実況"],
+    desc:"amiami Hobby Channelにて初配信。" },
+  { id:"v2",
+    youtubeId:"kZ5cQgOLFO4",
+    title:"宮下早紀のStreaming Club #3《Untitled Goose Game》",
+    date:"2024-11-26",
+    tags:["Untitled Goose Game","ゲーム実況","コメディ"],
+    desc:"いたずらガチョウゲームを実況プレイ。" },
+  { id:"v3",
+    youtubeId:"dQw4w9WgXcQ",
+    title:"宮下早紀×春花らんのStreaming Club #6《It Takes Two》コラボ",date:"2024-12-10",
+    tags:["It Takes Two","コラボ配信","春花らん"],
+    desc:"春花らんさんとの初コラボ配信。協力プレイの楽しさに目覚めた回。" },
+  { id:"v6",
+    youtubeId:"HFYaHl83Q7A",
+    title:"Streaming Club 全員コラボ配信《桃太郎電鉄》",
+    date:"2025-02-24",
+    tags:["全員コラボ","春花らん","湊みや","長月あおい","桃太郎電鉄"],
+    desc:"4人による初の全員コラボ配信。桃太郎電鉄で対決！" },
+  { id:"v7",
+    youtubeId:"L729ABmOgmM",
+    title:"宮下早紀のStreaming Club #33《ASTRONEER》",
+    date:"2025-06-24",
+    tags:["ASTRONEER","ゲーム実況","探索","クラフト"],
+    desc:"惑星を舞台にしたクラフト&探索ゲーム『ASTRONEER』をプレイ。" },
+  { id:"v8",
+    youtubeId:"5PLcVxJjt-Q",
+    title:"宮下早紀のStreaming Club #41《ヴァレット/VARLET》先行実況",date:"2025-08-26",
+    tags:["ヴァレット","VARLET","新作ゲーム","先行プレイ"],
+    desc:"8/28発売予定の新作『ヴァレット/VARLET』を先行実況プレイ。" },
+  { id:"v9",
+    youtubeId:"cy4ezGLJLtE",
+    title:"宮下早紀のStreaming Club #?《A Dance of Fire and Ice #02》",date:"2025-09-09",
+    tags:["A Dance of Fire and Ice","音ゲー","高難易度"],
+    desc:"高難易度音楽ゲーム『A Dance of Fire and Ice』の続き。" },
+  { id:"v10",
+    youtubeId:"LgOk0RvuzEY",
+    title:"宮下早紀のStreaming Club #?《日本事故物件監視協会》",
+    date:"2025-10-14",
+    tags:["日本事故物件監視協会","ホラーゲーム","ゲーム実況"],
+    desc:"視聴者リクエストに応えてホラーゲームに挑戦！" },
+  { id:"v11",
+    youtubeId:"ZHB1vBJO648",
+    title:"Streaming Club 全員コラボ配信《マリオカート ワールド》",
+    date:"2025-07-06",
+    tags:["全員コラボ","春花らん","湊みや","長月あおい","マリオカート"],desc:"夏の特別コラボ！4人で『マリオカート ワールド』を対決。" },
 ];
 
 const LOG_ENTRIES = [
@@ -1273,6 +1429,7 @@ const LOG_ENTRIES = [
 const TYPE_LABEL = { anime:'アニメ', game:'ゲーム', drama:'ドラマCD' };
 let activeWorksType = 'all';
 let activeWorksYear = null;
+let worksPage = 0;
 
 function getWorkYear(w){
   return w.year.replace(/[〜～].*/, '');
@@ -1289,20 +1446,25 @@ function renderWorksYearRow(){
   row.querySelectorAll('.year-btn').forEach(b=>{
     b.addEventListener('click',()=>{
       activeWorksYear = activeWorksYear===b.dataset.y ? null : b.dataset.y;
-      renderWorksYearRow(); renderWorks();
+      document.getElementById("worksGrid").dataset.expanded="false"; renderWorksYearRow(); renderWorks();
     });
   });
 }
 
 function renderWorks(){
   const grid = document.getElementById('worksGrid');
+  const toggle = document.getElementById('worksPager');
   let list = WORKS;
   if(activeWorksType !== 'all') list = list.filter(w=>w.type===activeWorksType);
   if(activeWorksYear) list = list.filter(w=>getWorkYear(w)===activeWorksYear);
   if(!list.length){
-    grid.innerHTML=`<p style="color:rgba(255,255,255,0.4);font-size:0.82rem;font-weight:700;padding:2rem 0;">該当する作品がありません。</p>`; return;
+    grid.innerHTML=`<p style="color:var(--ink);font-size:0.82rem;font-weight:700;padding:2rem 0;">該当する作品がありません。</p>`;
+    toggle.innerHTML=''; return;
   }
-  grid.innerHTML = list.map(w=>`
+  const LIMIT = 20;
+  const expanded = grid.dataset.expanded === 'true';
+  const shown = expanded ? list : list.slice(0, LIMIT);
+  grid.innerHTML = shown.map(w=>`
     <div class="work-card" data-type="${w.type}">
       <div class="work-card-stripe"></div>
       <div class="work-body">
@@ -1313,13 +1475,23 @@ function renderWorks(){
       </div>
     </div>
   `).join('');
+  if(list.length <= LIMIT){ toggle.innerHTML=''; return; }
+  const rest = list.length - LIMIT;
+  toggle.innerHTML = expanded
+    ? `<button class="pop-btn btn-ink" id="worksToggleBtn">▲ 折りたたむ</button>`
+    : `<button class="pop-btn btn-ink" id="worksToggleBtn">▼ もっと見る（残り${rest}件）</button>`;
+  document.getElementById('worksToggleBtn').addEventListener('click', ()=>{
+    grid.dataset.expanded = expanded ? 'false' : 'true';
+    renderWorks();
+    if(expanded) document.getElementById('works').scrollIntoView({behavior:'smooth'});
+  });
 }
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     activeWorksType = btn.dataset.f;
-    renderWorksYearRow(); renderWorks();
+    document.getElementById("worksGrid").dataset.expanded="false"; renderWorksYearRow(); renderWorks();
   });
 });
 renderWorksYearRow();
@@ -1356,15 +1528,17 @@ function renderCal(){
       const evs = SCHEDULE[key]||[];
       const [y,m,d] = key.split('-');
       document.getElementById('calModalDate').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日`;
-      document.getElementById('calModalEvents').innerHTML = evs.map(e=>`
-        <div style="border:2px solid var(--ink);border-radius:10px;padding:0.8rem 1rem;margin-bottom:0.7rem;background:${e.type==='live'?'var(--yellow-lt)':'var(--sky-lt)'};">
+      document.getElementById('calModalEvents').innerHTML = evs.map(e=>{
+        const bg = e.type==='live' ? '#fce8f0' : '#dff0f9';
+        return `<div class="cal-modal-event-card" style="background:${bg}">
           <div style="font-weight:900;font-size:0.88rem;line-height:1.4;margin-bottom:0.4rem;">
             🎤 ${h(e.text)}
           </div>
-          ${e.time ? `<div style="font-size:0.75rem;font-weight:700;color:var(--purple);margin-bottom:0.3rem;">🕐 ${h(e.time)}</div>` : ''}
-          ${e.detail ? `<div style="font-size:0.75rem;line-height:1.6;color:#444;">${h(e.detail)}</div>` : ''}
-        </div>
-      `).join('');
+          ${e.time ? '<div style="font-size:0.75rem;font-weight:700;color:var(--purple);margin-bottom:0.3rem;">🕐 ' + h(e.time) + '</div>' : ''}
+          ${e.detail ? '<div class="cal-modal-detail">' + h(e.detail).replace(/@([A-Za-z0-9_]+)/g, '<a href="https://x.com/$1" target="_blank" rel="noopener" class="cal-modal-link">@$1</a>').replace(/https?:\/\/[^\s<]+/g, u=>`<a href="${u}" target="_blank" rel="noopener" class="cal-modal-link">${u}</a>`) + '</div>' : ''}
+          ${e.url ? '<a href="' + h(e.url) + '" target="_blank" rel="noopener" class="cal-modal-link">🔗 公式ページ</a>' : ''}
+        </div>`;
+      }).join('')
       document.getElementById('calModal').classList.add('open');
     });
   });
@@ -1372,7 +1546,10 @@ function renderCal(){
   document.getElementById('calNotice').style.display = hasEv?'none':'block';
 }
 document.getElementById('calModalClose').onclick = ()=>document.getElementById('calModal').classList.remove('open');
-document.getElementById('calModal').addEventListener('click', e=>{ if(e.target===document.getElementById('calModal')) document.getElementById('calModal').classList.remove('open'); });
+document.getElementById('calModal').addEventListener('click', e=>{
+  if(e.target===document.getElementById('calModal'))
+    document.getElementById('calModal').classList.remove('open');
+});
 document.getElementById('calPrev').onclick=()=>{ calM--; if(calM<0){calM=11;calY--;} renderCal(); };
 document.getElementById('calNext').onclick=()=>{ calM++; if(calM>11){calM=0;calY++;} renderCal(); };
 renderCal();
@@ -1385,6 +1562,15 @@ let pendingVid = null;
 let vidPage = 0;
 const VID_PER_PAGE = 6;
 
+function renderVTagPills(v){
+  return v.tags.map(t=>
+    `<span class="v-tag-wrap">` +
+    `<span class="v-tag" data-t="${h(t)}">${h(t)}</span>` +
+    `<button class="v-tag-rpt" data-t="${h(t)}" data-vid="${h(v.id)}"` +
+    ` data-title="${h(v.title.slice(0,40))}" title="このタグを申請">🏷</button>` +
+    `</span>`
+  ).join('');
+}
 function getAllVidTags(){ return [...new Set(VIDEOS.flatMap(v=>v.tags))]; }
 
 function renderVidTags(){
@@ -1432,7 +1618,7 @@ function renderVidGrid(){
           </div>
         </div>
         <div class="video-title">${h(v.title)}</div>
-        <div class="video-tags-row">${v.tags.map(t=>`<span class="v-tag-wrap"><span class="v-tag" data-t="${h(t)}">${h(t)}</span><button class="v-tag-rpt" data-t="${h(t)}" data-vid="${h(v.id)}" data-title="${h(v.title.slice(0,40))}" title="このタグを申請">🏷</button></span>`).join('')}</div>
+        <div class="video-tags-row">${renderVTagPills(v)}</div>
       </div>
       <div class="vid-edit-form" id="ef-${v.id}">
         <label>タイトル</label>
@@ -1511,7 +1697,9 @@ function renderVidGrid(){
   for(let i=0;i<totalPages;i++){
     btns += `<button class="pg-btn${i===vidPage?' pg-active':''}" data-p="${i}">${i+1}</button>`;
   }
-  btns += `<button class="pg-btn${vidPage===totalPages-1?' pg-disabled':''}" data-p="${vidPage+1}" ${vidPage===totalPages-1?'disabled':''}>›</button>`;
+  const lastDisabled = vidPage===totalPages-1;
+  btns += `<button class="pg-btn${lastDisabled?' pg-disabled':''}"` +
+    ` data-p="${vidPage+1}" ${lastDisabled?'disabled':''}>›</button>`;
   pager.innerHTML = `<div class="pg-info">${list.length}件 / ${vidPage+1}ページ目（全${totalPages}ページ）</div>` + btns;
   pager.querySelectorAll('.pg-btn:not([disabled])').forEach(b=>{
     b.addEventListener('click',()=>{
@@ -1694,7 +1882,7 @@ function showToast(msg){
   let t = document.getElementById('siteToast');
   if(!t){
     t = document.createElement('div'); t.id='siteToast';
-    t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--pink);color:#fff;font-family:var(--ff);font-weight:800;font-size:0.82rem;padding:0.65rem 1.4rem;border-radius:99px;box-shadow:3px 3px 0 rgba(0,0,0,0.3);z-index:999;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;';
+    t.className='site-toast';
     document.body.appendChild(t);
   }
   t.textContent = msg; t.style.opacity='1';
@@ -1808,7 +1996,7 @@ function openModal(id){
     `<iframe src="https://www.youtube.com/embed/${v.youtubeId}?autoplay=1" allowfullscreen allow="autoplay"></iframe>`;
   document.getElementById('modalTitle').textContent = v.title;
   document.getElementById('modalTags').innerHTML =
-    v.tags.map(t=>`<span class="tag-pill" style="cursor:default;border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);">${h(t)}</span>`).join('');
+    v.tags.map(t=>`<span class="tag-pill tag-pill--ghost">${h(t)}</span>`).join('');
   document.getElementById('vidModal').classList.add('open');
 }
 function closeModal(){
@@ -1876,7 +2064,7 @@ function renderLogList(){
             : `<span class="badge badge-fan">ファン投稿</span>`}
         </div>
         <div class="log-quote">「${h(e.quote)}」</div>
-        <div class="log-tags">${(e.tags||[]).map(t=>`<span class="log-tag-wrap2"><span class="log-tag" data-t="${h(t)}">${h(t)}</span><button class="log-tag-rpt" data-t="${h(t)}" data-eid="${h(e.id||'')}" data-title="${h((e.quote||'').slice(0,30))}" title="このタグを申請">🏷</button></span>`).join('')}</div>
+        <div class="log-tags">${renderLogTagPills(e)}</div>
         ${e.src ? `<div class="log-source">📎 ${h(e.src)}</div>` : ''}
         ${e.videoId||e.youtubeUrl
           ? `<button class="log-src-btn" data-vid="${e.videoId||''}" data-url="${e.youtubeUrl||''}">▶ 動画で見る</button>`
