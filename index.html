@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>宮下Fun!</title>
+<title>宮下Fan!</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Boogaloo&display=swap" rel="stylesheet">
@@ -128,8 +128,8 @@ nav {
 }
 
 .hero-title {
-  font-size: clamp(4rem, 12vw, 9rem);
-  font-weight: 900; line-height: 1;
+  font-size: clamp(2.8rem, 10vw, 9rem);
+  font-weight: 900; line-height: 1.1;
   color: var(--ink);
   -webkit-text-stroke: 2px var(--ink);
   paint-order: stroke fill;
@@ -299,6 +299,14 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
 }
 .cal-cell {
   background: var(--white); min-height: 82px; padding: 0.4rem;
+}
+@media(max-width:768px){
+  .cal-cell { min-height: 56px; padding: 0.25rem; }
+  .cal-event { font-size: 0.5rem; padding: 0.08rem 0.2rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .cal-day { font-size: 0.65rem; }
 }
 .cal-cell.empty { background: #f8f8f8; }
 .cal-cell.today { background: #fff0f8; }
@@ -664,6 +672,10 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
 .log-entry:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-m); }
 .log-meta { min-width: 88px; font-size: 0.68rem; font-weight: 700; color: var(--purple); padding-top: 2px; line-height: 1.5; }
 .log-body { flex: 1; }
+@media(max-width:768px){
+  .log-entry { flex-direction: column; gap: 0.5rem; }
+  .log-meta { min-width: unset; padding-top: 0; }
+}
 .log-badge-row { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.45rem; }
 .badge {
   font-size: 0.6rem; font-weight: 700;
@@ -814,8 +826,8 @@ footer a:hover { color: var(--white); }
    SUPABASE 設定
    ▼ 公開前にご自身のURLとanon keyに書き換えてください
 ══════════════════════════════ */
-const SUPABASE_URL  = 'https://psnumniqlpnjbmvihsjj.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_BIM0u38weZLzqey11OaZIg_HKBrkC98';
+const SUPABASE_URL  = 'https://YOUR_PROJECT.supabase.co';
+const SUPABASE_ANON = 'YOUR_ANON_KEY';
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 /* 汎用ラッパー：テーブルから全行取得 */
@@ -845,7 +857,7 @@ async function sbDelete(table, id){
 
 <!-- ══ NAV ══ -->
 <nav>
-  <a class="nav-logo" href="javascript:void(0)" onclick="navTo('hero')">宮下<span>Fun!</span></a>
+  <a class="nav-logo" href="javascript:void(0)" onclick="navTo('hero')">宮下<span>Fan!</span></a>
   <ul class="nav-links">
     <li><a href="javascript:void(0)" onclick="navTo('works')">出演作品</a></li>
     <li><a href="javascript:void(0)" onclick="navTo('schedule')">出演予定</a></li>
@@ -864,7 +876,7 @@ async function sbDelete(table, id){
   <span class="deco" style="bottom:26%;right:6%;--dur:3.8s;--delay:0.4s;--r0:3deg;--r1:-6deg;font-size:1.5rem;opacity:0.4">🪼</span>
 
   <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;">
-    <div class="hero-eyebrow">宮下Fun!</div>
+    <div class="hero-eyebrow">宮下Fan!</div>
     <h1 class="hero-title">宮下早紀</h1>
     <p class="hero-sub">Saki Miyashita</p>
     <div class="hero-pills">
@@ -1123,7 +1135,7 @@ async function sbDelete(table, id){
 
 <!-- ══ FOOTER ══ -->
 <footer>
-  <span class="foot-logo">宮下Fun!</span>
+  <span class="foot-logo">宮下Fan!</span>
   Fan-made, not affiliated with official organizations.<br>
   公式情報は <a href="https://x.com/SAKI_MIYASHITA" target="_blank">公式X（@SAKI_MIYASHITA）</a> をご確認ください。
 </footer>
