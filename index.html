@@ -1357,79 +1357,9 @@ const SCHEDULE = {
   ],
 };
 
-let VIDEOS = [
-  { id:"v1",
-    youtubeId:"KT7LLjvys14",
-    title:"宮下早紀のStreaming Club #1（初回配信）",
-    date:"2024-11-12",
-    tags:["初回","自己紹介","ゲーム実況"],
-    desc:"amiami Hobby Channelにて初配信。" },
-  { id:"v2",
-    youtubeId:"kZ5cQgOLFO4",
-    title:"宮下早紀のStreaming Club #3《Untitled Goose Game》",
-    date:"2024-11-26",
-    tags:["Untitled Goose Game","ゲーム実況","コメディ"],
-    desc:"いたずらガチョウゲームを実況プレイ。" },
-  { id:"v3",
-    youtubeId:"dQw4w9WgXcQ",
-    title:"宮下早紀×春花らんのStreaming Club #6《It Takes Two》コラボ",date:"2024-12-10",
-    tags:["It Takes Two","コラボ配信","春花らん"],
-    desc:"春花らんさんとの初コラボ配信。協力プレイの楽しさに目覚めた回。" },
-  { id:"v6",
-    youtubeId:"HFYaHl83Q7A",
-    title:"Streaming Club 全員コラボ配信《桃太郎電鉄》",
-    date:"2025-02-24",
-    tags:["全員コラボ","春花らん","湊みや","長月あおい","桃太郎電鉄"],
-    desc:"4人による初の全員コラボ配信。桃太郎電鉄で対決！" },
-  { id:"v7",
-    youtubeId:"L729ABmOgmM",
-    title:"宮下早紀のStreaming Club #33《ASTRONEER》",
-    date:"2025-06-24",
-    tags:["ASTRONEER","ゲーム実況","探索","クラフト"],
-    desc:"惑星を舞台にしたクラフト&探索ゲーム『ASTRONEER』をプレイ。" },
-  { id:"v8",
-    youtubeId:"5PLcVxJjt-Q",
-    title:"宮下早紀のStreaming Club #41《ヴァレット/VARLET》先行実況",date:"2025-08-26",
-    tags:["ヴァレット","VARLET","新作ゲーム","先行プレイ"],
-    desc:"8/28発売予定の新作『ヴァレット/VARLET』を先行実況プレイ。" },
-  { id:"v9",
-    youtubeId:"cy4ezGLJLtE",
-    title:"宮下早紀のStreaming Club #?《A Dance of Fire and Ice #02》",date:"2025-09-09",
-    tags:["A Dance of Fire and Ice","音ゲー","高難易度"],
-    desc:"高難易度音楽ゲーム『A Dance of Fire and Ice』の続き。" },
-  { id:"v10",
-    youtubeId:"LgOk0RvuzEY",
-    title:"宮下早紀のStreaming Club #?《日本事故物件監視協会》",
-    date:"2025-10-14",
-    tags:["日本事故物件監視協会","ホラーゲーム","ゲーム実況"],
-    desc:"視聴者リクエストに応えてホラーゲームに挑戦！" },
-  { id:"v11",
-    youtubeId:"ZHB1vBJO648",
-    title:"Streaming Club 全員コラボ配信《マリオカート ワールド》",
-    date:"2025-07-06",
-    tags:["全員コラボ","春花らん","湊みや","長月あおい","マリオカート"],desc:"夏の特別コラボ！4人で『マリオカート ワールド』を対決。" },
-];
+let VIDEOS = [];
 
-const LOG_ENTRIES = [
-  { id:"o1", date:"2025年2月", episode:"れポたま！インタビュー",
-    quote:"とてもうれしかったですが、同時に「自分でいいのかな？」という不安もありまして……。でも「こうしてお声がけいただいたからには、自分のベストを尽くそう！」と切り替えて配信に臨みました。",
-    tags:["Streaming Club","番組への想い","不安と決意"], videoId:"v1", src:"れポたま！インタビュー（2025年2月）" },
-  { id:"o2", date:"2025年2月", episode:"れポたま！インタビュー",
-    quote:"いつも配信中のコメントやアーカイブのコメントで楽しませてもらっています。いつか応援してくださっているみなさんと一緒にゲームができたら嬉しいなと密かに思っています。",
-    tags:["ファンへ","Streaming Club","夢"], videoId:"v1", src:"れポたま！インタビュー（2025年2月）" },
-  { id:"o3", date:"2025年2月", episode:"れポたま！インタビュー",
-    quote:"「宮下早紀ってこういう声優なんだ」と知ってもらえるような配信を目指していきますので、これからも応援よろしくお願いします！",
-    tags:["Streaming Club","声優","番組への想い"], videoId:"v1", src:"れポたま！インタビュー（2025年2月）" },
-  { id:"o4", date:"2024年12月", episode:"れポたま！コラボインタビュー",
-    quote:"配信を観させていただいていたこともあると思いますが、「初めまして」とは思えないくらい、楽しくトークやゲームができました！",
-    tags:["コラボ配信","春花らん","It Takes Two"], videoId:"v3", src:"れポたま！インタビュー（2025年2月）" },
-  { id:"o5", date:"Streaming Club 第55回", episode:"第55回配信",
-    quote:"「早紀」の「早」は、元々4月に生まれる予定だったのが前年の12月に早く生まれたことからきていて、「紀」は深夜に受け入れてくれる病院が和歌山県（紀州）にあったことからきているんです。",
-    tags:["名前の由来","生い立ち","エピソード"], videoId:"v1", src:"宮下早紀のStreaming Club 第55回（Wikipedia掲載情報）" },
-  { id:"o6", date:"Streaming Club", episode:"配信内",
-    quote:"父は『Streaming Club』にハマって視聴してくれていて、「早紀がやってるの、おもろいやんけ。」と話していたそうで（笑）",
-    tags:["家族","父","エピソード","Streaming Club"], videoId:"v1", src:"Wikipedia掲載情報" },
-];
+const LOG_ENTRIES = [];
 
 /* ══════════════════════════════
    WORKS
@@ -1739,7 +1669,7 @@ document.getElementById('fetchBtn').addEventListener('click', async()=>{
   document.getElementById('addPreview').style.display='block';
 });
 
-document.getElementById('addConfirmBtn').addEventListener('click',()=>{
+document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   if(!pendingVid) return;
   const rawTitle = document.getElementById('prevTitle').value.trim();
   const rawTags  = document.getElementById('prevTags').value;
@@ -1752,7 +1682,9 @@ document.getElementById('addConfirmBtn').addEventListener('click',()=>{
   const title = rawTitle.slice(0,200) || '(タイトル未設定)';
   const desc  = rawDesc.slice(0,500);
   const id    = 'v' + Date.now();
-  VIDEOS.unshift({ id, youtubeId:pendingVid, title, date:new Date().toISOString().slice(0,10), tags, desc });
+  const newVid = { id, youtubeId:pendingVid, title, date:new Date().toISOString().slice(0,10), tags, desc };
+  VIDEOS.unshift(newVid);
+  await sbInsert('user_videos', { id, youtube_id:pendingVid, title, date:newVid.date, tags, description:desc });
   document.getElementById('addPreview').style.display='none';
   document.getElementById('addUrl').value='';
   document.getElementById('prevTitle').value='';
@@ -1770,7 +1702,18 @@ document.getElementById('addCancelBtn').addEventListener('click',()=>{
 });
 
 document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; renderVidGrid(); });
-renderVidTags(); renderVidGrid();
+
+async function loadUserVideos(){
+  const rows = await sbGetAll('user_videos');
+  // Supabase保存分をVIDEOSの先頭に追加（HTMLのv*と重複しないもののみ）
+  const htmlIds = new Set(VIDEOS.map(v=>v.id));
+  rows.forEach(r=>{
+    if(!htmlIds.has(r.id)){
+      VIDEOS.unshift({ id:r.id, youtubeId:r.youtube_id, title:r.title, date:r.date, tags:r.tags||[], desc:r.description||'' });
+    }
+  });
+}
+(async()=>{ await loadUserVideos(); renderVidTags(); renderVidGrid(); })();
 
 /* ══════════════════════════════
    REPORT MODAL & ADMIN PANEL
@@ -1869,8 +1812,9 @@ function renderAdminReports(){
   list.querySelectorAll('.report-delete-btn').forEach(b=>{
     b.addEventListener('click', async()=>{
       if(!confirm(`この動画を削除しますか？`)) return;
-      VIDEOS = VIDEOS.filter(v=>v.id!==b.dataset.vid);
+      await sbDelete('user_videos', b.dataset.vid);
       await sbUpdate('delete_reports', b.dataset.rid, {status:'deleted'});
+      VIDEOS = VIDEOS.filter(v=>v.id!==b.dataset.vid);
       await loadReports();
       renderVidTags(); renderVidGrid(); renderAdminReports();
       showToast('削除しました');
