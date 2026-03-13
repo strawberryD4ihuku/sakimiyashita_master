@@ -1048,6 +1048,10 @@ async function sbDelete(table, id){
               <input id="prevTags" type="text" placeholder="例: ゲーム実況, コラボ">
             </div>
             <div>
+              <div style="font-size:0.68rem;font-weight:700;color:var(--yellow);margin-bottom:0.25rem;">年月日</div>
+              <input id="prevDate" type="date">
+            </div>
+            <div>
               <div style="font-size:0.68rem;font-weight:700;color:var(--yellow);margin-bottom:0.25rem;">メモ</div>
               <input id="prevDesc" type="text" placeholder="配信の説明…">
             </div>
@@ -1563,6 +1567,8 @@ function renderVidGrid(){
         <input class="ef-title" value="${h(v.title)}">
         <label>タグ（カンマ区切り）</label>
         <input class="ef-tags" value="${h(v.tags.join(', '))}">
+        <label>年月日</label>
+        <input class="ef-date" type="date" value="${h(v.date||'')}">
         <label>メモ</label>
         <input class="ef-desc" value="${h(v.desc)}">
         <div class="ef-btns">
@@ -1598,13 +1604,15 @@ function renderVidGrid(){
 
   // 編集保存
   grid.querySelectorAll('.ef-save').forEach(b=>{
-    b.addEventListener('click', e=>{
+    b.addEventListener('click', async e=>{
       e.stopPropagation();
       const v = VIDEOS.find(x=>x.id===b.dataset.id); if(!v) return;
       const form = document.getElementById('ef-'+b.dataset.id);
       v.title = form.querySelector('.ef-title').value.trim() || v.title;
       v.tags  = form.querySelector('.ef-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+      v.date  = form.querySelector('.ef-date').value || v.date;
       v.desc  = form.querySelector('.ef-desc').value.trim();
+      await sbUpdate('user_videos', b.dataset.id, { title:v.title, tags:v.tags, date:v.date, description:v.desc });
       renderVidTags(); renderVidGrid();
     });
   });
@@ -1674,6 +1682,7 @@ document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   const rawTitle = document.getElementById('prevTitle').value.trim();
   const rawTags  = document.getElementById('prevTags').value;
   const rawDesc  = document.getElementById('prevDesc').value.trim();
+  const rawDate  = document.getElementById('prevDate').value;
   // 長さバリデーション
   if(rawTitle.length > 200){
     const err=document.getElementById('addErr'); err.textContent='⚠ タイトルは200文字以内にしてください。'; err.style.display='block'; return;
@@ -1681,14 +1690,16 @@ document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   const tags = rawTags.split(',').map(t=>t.trim().slice(0,30)).filter(Boolean).slice(0,10);
   const title = rawTitle.slice(0,200) || '(タイトル未設定)';
   const desc  = rawDesc.slice(0,500);
+  const date  = rawDate || new Date().toISOString().slice(0,10);
   const id    = 'v' + Date.now();
-  const newVid = { id, youtubeId:pendingVid, title, date:new Date().toISOString().slice(0,10), tags, desc };
+  const newVid = { id, youtubeId:pendingVid, title, date, tags, desc };
   VIDEOS.unshift(newVid);
-  await sbInsert('user_videos', { id, youtube_id:pendingVid, title, date:newVid.date, tags, description:desc });
+  await sbInsert('user_videos', { id, youtube_id:pendingVid, title, date, tags, description:desc });
   document.getElementById('addPreview').style.display='none';
   document.getElementById('addUrl').value='';
   document.getElementById('prevTitle').value='';
   document.getElementById('prevTags').value='';
+  document.getElementById('prevDate').value='';
   document.getElementById('prevDesc').value='';
   pendingVid=null;
   renderVidTags(); renderVidGrid();
