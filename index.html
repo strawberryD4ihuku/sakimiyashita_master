@@ -1825,6 +1825,8 @@ document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
   const email = document.getElementById('adminEmail').value.trim();
   const pw    = document.getElementById('adminPw').value;
   const { data, error } = await _sb.auth.signInWithPassword({ email, password: pw });
+  console.log('login error:', JSON.stringify(error));
+  console.log('login data:', data?.session ? 'session OK' : 'no session');
   if(!error && data.session){
     adminUnlocked = true;
     document.getElementById('adminLoginArea').style.display='none';
