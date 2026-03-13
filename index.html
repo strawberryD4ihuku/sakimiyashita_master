@@ -1092,6 +1092,7 @@ async function sbDelete(table, id){
     <div class="video-searchbar">
       <input class="video-search-input" id="vidSearch" type="text" placeholder="🔍 タイトルで検索…">
     </div>
+    <div style="margin-bottom:0.5rem;"><select id="vidMonthFilter" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:20px;border:2px solid var(--ink);background:var(--white);cursor:pointer;"></select></div>
     <div class="tag-row" id="vidTagRow"></div>
     <div class="video-grid" id="videoGrid"></div>
     <div class="vid-pager" id="vidPager"></div>
@@ -1499,7 +1500,19 @@ renderCal();
 /* ══════════════════════════════
    VIDEOS
 ══════════════════════════════ */
+function formatVidDate(d){
+  if(!d) return '';
+  const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m) return `${m[1]}年${parseInt(m[2])}月${parseInt(m[3])}日`;
+  return d;
+}
+function vidYearMonth(d){
+  if(!d) return '';
+  const m = d.match(/^(\d{4})-(\d{2})/);
+  return m ? `${m[1]}年${parseInt(m[2])}月` : '';
+}
 let activeVidTag = null;
+let activeVidMonth = null;
 let pendingVid = null;
 let vidPage = 0;
 const VID_PER_PAGE = 6;
@@ -1515,7 +1528,14 @@ function renderVTagPills(v){
 }
 function getAllVidTags(){ return [...new Set(VIDEOS.flatMap(v=>v.tags))]; }
 
+function renderVidMonthSelect(){
+  const sel = document.getElementById('vidMonthFilter');
+  const months = [...new Set(VIDEOS.map(v=>vidYearMonth(v.date)).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+  sel.innerHTML = '<option value="">📅 すべての月</option>' + months.map(m=>`<option value="${m}"${activeVidMonth===m?' selected':''}>${m}</option>`).join('');
+  sel.onchange = ()=>{ activeVidMonth = sel.value||null; vidPage=0; renderVidGrid(); };
+}
 function renderVidTags(){
+  renderVidMonthSelect();
   const row = document.getElementById('vidTagRow');
   row.innerHTML = getAllVidTags().map(t=>`
     <button class="tag-pill${activeVidTag===t?' active':''}" data-t="${h(t)}">${h(t)}</button>
@@ -1535,7 +1555,8 @@ function renderVidGrid(){
   let list = VIDEOS.filter(v=>{
     const matchQ = !q || v.title.toLowerCase().includes(q) || v.desc.toLowerCase().includes(q);
     const matchT = !activeVidTag || v.tags.includes(activeVidTag);
-    return matchQ && matchT;
+    const matchM = !activeVidMonth || vidYearMonth(v.date)===activeVidMonth;
+    return matchQ && matchT && matchM;
   });
   if(!list.length){
     grid.innerHTML=`<p style="color:rgba(255,255,255,0.4);font-size:0.82rem;font-weight:700;padding:2rem 0;">該当する動画がありません。</p>`;
@@ -1553,7 +1574,7 @@ function renderVidGrid(){
       </div>
       <div class="video-info">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.4rem;">
-          <div class="video-date">${h(v.date)}</div>
+          <div class="video-date">${h(formatVidDate(v.date))}</div>
           <div class="vid-card-actions">
             <button class="edit-btn" data-id="${v.id}" title="編集">✎ 編集</button>
             <button class="report-btn" data-id="${v.id}" title="削除申請">🚩</button>
