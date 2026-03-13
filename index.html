@@ -910,8 +910,8 @@ footer a:hover { color: var(--white); }
    SUPABASE 設定
    ▼ 公開前にご自身のURLとanon keyに書き換えてください
 ══════════════════════════════ */
-const SUPABASE_URL  = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON = 'YOUR_ANON_KEY';
+const SUPABASE_URL  = 'https://psnumniqlpnjbmvihsjj.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_BIM0u38weZLzqey11OaZIg_HKBrkC98';
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 /* 汎用ラッパー：テーブルから全行取得 */
@@ -1825,8 +1825,6 @@ document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
   const email = document.getElementById('adminEmail').value.trim();
   const pw    = document.getElementById('adminPw').value;
   const { data, error } = await _sb.auth.signInWithPassword({ email, password: pw });
-  console.log('login error:', JSON.stringify(error));
-  console.log('login data:', data?.session ? 'session OK' : 'no session');
   if(!error && data.session){
     adminUnlocked = true;
     document.getElementById('adminLoginArea').style.display='none';
