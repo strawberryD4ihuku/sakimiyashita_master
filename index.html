@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪼%3C/text%3E%3C/svg%3E">
 <title>宮下Fan!</title>
+<meta name="description" content="声優・宮下早紀の非公式ファンサイト。出演作品・イベント情報・動画館・発言集をまとめています。">
+<meta name="keywords" content="宮下早紀,声優,ファンサイト,Streaming Club,出演作品,イベント">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="宮下Fan!">
+<meta property="og:description" content="声優・宮下早紀の非公式ファンサイト。出演作品・イベント情報・動画館・発言集をまとめています。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://miyashita-saki-fansite.com">
+<meta property="og:site_name" content="宮下Fan!">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="宮下Fan!">
+<meta name="twitter:description" content="声優・宮下早紀の非公式ファンサイト。出演作品・イベント情報・動画館・発言集をまとめています。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Boogaloo&display=swap" rel="stylesheet">
@@ -1094,6 +1105,9 @@ async function sbDelete(table, id){
       <input class="video-search-input" id="vidSearch" type="text" placeholder="🔍 タイトルで検索…">
     </div>
     <div style="margin-bottom:0.5rem;"><select id="vidMonthFilter" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:20px;border:2px solid var(--ink);background:var(--white);cursor:pointer;"></select></div>
+    <div style="margin-bottom:0.5rem;">
+      <input id="vidTagSearch" type="text" placeholder="🏷 タグを絞り込む…" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.8rem;border-radius:20px;border:2px solid var(--ink);width:100%;box-sizing:border-box;max-width:280px;">
+    </div>
     <div class="tag-row" id="vidTagRow"></div>
     <div class="video-grid" id="videoGrid"></div>
     <div class="vid-pager" id="vidPager"></div>
@@ -1537,10 +1551,13 @@ function renderVidMonthSelect(){
 }
 function renderVidTags(){
   renderVidMonthSelect();
+  const q = (document.getElementById('vidTagSearch')?.value||'').toLowerCase();
   const row = document.getElementById('vidTagRow');
-  row.innerHTML = getAllVidTags().map(t=>`
-    <button class="tag-pill${activeVidTag===t?' active':''}" data-t="${h(t)}">${h(t)}</button>
-  `).join('');
+  const allTags = getAllVidTags().filter(t=>!q||t.toLowerCase().includes(q));
+  row.innerHTML = allTags.map(t=>{
+    const count = VIDEOS.filter(v=>v.tags.includes(t)).length;
+    return `<button class="tag-pill${activeVidTag===t?' active':''}" data-t="${h(t)}">${h(t)}<span style="margin-left:0.3em;opacity:0.7;font-size:0.8em;">${count}</span></button>`;
+  }).join('');
   row.querySelectorAll('.tag-pill').forEach(b=>{
     b.addEventListener('click',()=>{
       activeVidTag = activeVidTag===b.dataset.t ? null : b.dataset.t;
@@ -1701,6 +1718,12 @@ document.getElementById('fetchBtn').addEventListener('click', async()=>{
 
 document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   if(!pendingVid) return;
+  // 重複チェック
+  if(VIDEOS.some(v=>v.youtubeId===pendingVid)){
+    const err=document.getElementById('addErr');
+    err.textContent='⚠ この動画はすでに登録されています。';
+    err.style.display='block'; return;
+  }
   const rawTitle = document.getElementById('prevTitle').value.trim();
   const rawTags  = document.getElementById('prevTags').value;
   const rawDesc  = document.getElementById('prevDesc').value.trim();
@@ -1735,6 +1758,7 @@ document.getElementById('addCancelBtn').addEventListener('click',()=>{
 });
 
 document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; renderVidGrid(); });
+document.getElementById('vidTagSearch').addEventListener('input', ()=>{ renderVidTags(); });
 
 async function loadUserVideos(){
   const { data, error } = await _sb.from('user_videos').select('*').order('date', { ascending: false });
