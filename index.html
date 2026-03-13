@@ -139,9 +139,9 @@ nav {
 }
 @media(max-width:768px){
   .hero-title {
-    -webkit-text-stroke: 1px var(--ink);
-    text-shadow: 2px 2px 0 var(--ink);
-    font-weight: 800;
+    -webkit-text-stroke: 0px;
+    text-shadow: none;
+    font-weight: 900;
   }
 }
 
@@ -305,16 +305,19 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   font-size: 0.72rem; font-weight: 700;
 }
 .cal-cell {
-  background: var(--white); min-height: 82px; padding: 0.4rem;
+  background: var(--white); min-height: 72px; padding: 0.4rem;
+  cursor: default; position: relative;
+}
+.cal-cell.has-event { cursor: pointer; background: var(--yellow-lt); }
+.cal-cell.has-event:active { background: var(--yellow); }
+.cal-event-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pink); border: 1.5px solid var(--ink);
+  margin: 2px auto 0;
 }
 @media(max-width:768px){
-  .cal-grid { min-width: 560px; }
-  .cal-cell { min-height: 64px; padding: 0.3rem; }
-  .cal-event { font-size: 0.52rem; padding: 0.08rem 0.2rem;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 100%;
-  }
-  .cal-day { font-size: 0.65rem; }
+  .cal-cell { min-height: 44px; padding: 0.25rem; }
+  .cal-day { font-size: 0.7rem; }
 }
 .cal-cell.empty { background: #f8f8f8; }
 .cal-cell.today { background: #fff0f8; }
@@ -926,12 +929,21 @@ async function sbDelete(table, id){
       <div class="cal-month-label" id="calLabel"></div>
       <button class="cal-arrow" id="calNext">▶</button>
     </div>
-    <div class="cal-scroll-wrap">
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
+    <div class="cal-grid" id="calGrid"></div>
     <p class="cal-notice" id="calNotice">この月の登録済みイベントはありません。</p>
   </div>
 </section>
+
+<!-- カレンダー詳細モーダル -->
+<div class="modal-bg" id="calModal">
+  <div class="modal-box" style="max-width:360px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div id="calModalDate" style="font-weight:900;font-size:1rem;"></div>
+      <button class="modal-close" id="calModalClose">✕</button>
+    </div>
+    <div id="calModalEvents"></div>
+  </div>
+</div>
 
 <!-- ══ VIDEOS ══ -->
 <section id="videos" class="fade-in">
@@ -1205,15 +1217,20 @@ const WORKS = [
 const TODAY = new Date();
 const SCHEDULE = {
   "2026-03-14": [
-    { text:"土曜日はオフレコでお願いします！ ホワイトデースペシャル 昼の部", type:"live" },
-    { text:"土曜日はオフレコでお願いします！ ホワイトデースペシャル 夜の部", type:"live" },
+    { text:"土曜日はオフレコでお願いします！ ホワイトデースペシャル 昼の部", type:"live",
+      time:"開場12:00 / 開演13:00", detail:"バレンタインデーに続くホワイトデースペシャル公演。昼の部。" },
+    { text:"土曜日はオフレコでお願いします！ ホワイトデースペシャル 夜の部", type:"live",
+      time:"開場17:00 / 開演18:00", detail:"バレンタインデーに続くホワイトデースペシャル公演。夜の部。" },
   ],
   "2026-03-22": [
-    { text:"北海道ベストフレンドパーク（優木かな・宮下早紀）1部", type:"live" },
-    { text:"北海道ベストフレンドパーク（優木かな・宮下早紀）2部", type:"live" },
+    { text:"北海道ベストフレンドパーク（優木かな・宮下早紀）1部", type:"live",
+      time:"開場11:30 / 開演12:00", detail:"優木かなさんとのユニットイベント。北海道開催。1部公演。" },
+    { text:"北海道ベストフレンドパーク（優木かな・宮下早紀）2部", type:"live",
+      time:"開場15:30 / 開演16:00", detail:"優木かなさんとのユニットイベント。北海道開催。2部公演。" },
   ],
   "2026-03-29": [
-    { text:"「AnimeJapan 2026」ポニーキャニオンブース 「貴族転生」ステージ", type:"live" },
+    { text:"「AnimeJapan 2026」ポニーキャニオンブース 「貴族転生」ステージ", type:"live",
+      time:"時間未定", detail:"AnimeJapan 2026 東京ビッグサイト開催。ポニーキャニオンブースにて「貴族転生」ステージイベントに出演。" },
   ],
 };
 
@@ -1326,15 +1343,36 @@ function renderCal(){
     const key=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday = calY===TODAY.getFullYear()&&calM===TODAY.getMonth()&&d===TODAY.getDate();
     const evs = SCHEDULE[key]||[];
-    html+=`<div class="cal-cell${isToday?' today':''}">
+    const hasEv = evs.length > 0;
+    html+=`<div class="cal-cell${isToday?' today':''}${hasEv?' has-event':''}" data-key="${key}">
       <div class="cal-day">${d}</div>
-      ${evs.map(e=>`<div class="cal-event${e.type==='live'?' live':''}">${e.text}</div>`).join('')}
+      ${hasEv ? `<div class="cal-event-dot"></div>` : ''}
     </div>`;
   }
   grid.innerHTML = html;
+  grid.querySelectorAll('.cal-cell.has-event').forEach(cell=>{
+    cell.addEventListener('click', ()=>{
+      const key = cell.dataset.key;
+      const evs = SCHEDULE[key]||[];
+      const [y,m,d] = key.split('-');
+      document.getElementById('calModalDate').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日`;
+      document.getElementById('calModalEvents').innerHTML = evs.map(e=>`
+        <div style="border:2px solid var(--ink);border-radius:10px;padding:0.8rem 1rem;margin-bottom:0.7rem;background:${e.type==='live'?'var(--yellow-lt)':'var(--sky-lt)'};">
+          <div style="font-weight:900;font-size:0.88rem;line-height:1.4;margin-bottom:0.4rem;">
+            🎤 ${h(e.text)}
+          </div>
+          ${e.time ? `<div style="font-size:0.75rem;font-weight:700;color:var(--purple);margin-bottom:0.3rem;">🕐 ${h(e.time)}</div>` : ''}
+          ${e.detail ? `<div style="font-size:0.75rem;line-height:1.6;color:#444;">${h(e.detail)}</div>` : ''}
+        </div>
+      `).join('');
+      document.getElementById('calModal').classList.add('open');
+    });
+  });
   const hasEv = Object.keys(SCHEDULE).some(k=>k.startsWith(`${calY}-${String(calM+1).padStart(2,'0')}-`));
   document.getElementById('calNotice').style.display = hasEv?'none':'block';
 }
+document.getElementById('calModalClose').onclick = ()=>document.getElementById('calModal').classList.remove('open');
+document.getElementById('calModal').addEventListener('click', e=>{ if(e.target===document.getElementById('calModal')) document.getElementById('calModal').classList.remove('open'); });
 document.getElementById('calPrev').onclick=()=>{ calM--; if(calM<0){calM=11;calY--;} renderCal(); };
 document.getElementById('calNext').onclick=()=>{ calM++; if(calM>11){calM=0;calY++;} renderCal(); };
 renderCal();
