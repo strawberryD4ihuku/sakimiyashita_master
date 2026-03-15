@@ -1557,11 +1557,12 @@ function renderVidTags(){
   const q = (document.getElementById('vidTagSearch')?.value||'').toLowerCase();
   const searchQ = document.getElementById('vidSearch').value.toLowerCase();
   const row = document.getElementById('vidTagRow');
-  // 現在の絞り込み条件（月・テキスト）に合致する動画のみ対象
+  // 現在の絞り込み条件（月・テキスト・タグ）に合致する動画のみ対象
   const filteredVids = VIDEOS.filter(v=>{
     const matchQ = !searchQ || v.title.toLowerCase().includes(searchQ) || (v.desc||'').toLowerCase().includes(searchQ);
     const matchM = !activeVidMonth || vidYearMonth(v.date)===activeVidMonth;
-    return matchQ && matchM;
+    const matchT = !activeVidTag || v.tags.includes(activeVidTag);
+    return matchQ && matchM && matchT;
   });
   const sorted = [...new Set(filteredVids.flatMap(v=>v.tags))]
     .map(t=>({ t, count: filteredVids.filter(v=>v.tags.includes(t)).length }))
@@ -1797,12 +1798,12 @@ function renderTagSuggest(inputEl, suggestEl){
     searchBox.className = 'tag-suggest-search';
     searchBox.style.cssText = 'font-size:0.72rem;padding:0.25rem 0.6rem;border-radius:16px;border:2px solid var(--ink);width:100%;box-sizing:border-box;max-width:220px;margin-bottom:0.4rem;display:block;';
     suggestEl.parentNode.insertBefore(searchBox, suggestEl);
-    searchBox.addEventListener('input', ()=> _renderTagPills(inputEl, suggestEl, searchBox.value));
+    searchBox.addEventListener('input', ()=> _renderTagPills(inputEl, suggestEl, searchBox.value, false));
   }
   _renderTagPills(inputEl, suggestEl, searchBox.value||'');
 }
 
-function _renderTagPills(inputEl, suggestEl, q){
+function _renderTagPills(inputEl, suggestEl, q, expanded=false){
   // 使用頻度→50音順でソート
   const counts = {};
   getAllVidTags().forEach(t=>{ counts[t] = VIDEOS.filter(v=>v.tags.includes(t)).length; });
@@ -1810,10 +1811,12 @@ function _renderTagPills(inputEl, suggestEl, q){
     .filter(t=>!q||t.toLowerCase().includes(q.toLowerCase()))
     .sort((a,b)=> counts[b]!==counts[a] ? counts[b]-counts[a] : a.localeCompare(b,'ja'));
   const cur = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
-  suggestEl.innerHTML = sorted.map(t=>
+  const limit = expanded ? sorted.length : 10;
+  const visible = sorted.slice(0, limit);
+  suggestEl.innerHTML = visible.map(t=>
     `<button type="button" class="tag-pill${cur.includes(t)?' active':''}" data-t="${h(t)}" style="font-size:0.68rem;padding:0.15rem 0.5rem;">${h(t)}</button>`
-  ).join('');
-  suggestEl.querySelectorAll('.tag-pill').forEach(b=>{
+  ).join('') + (sorted.length > 10 ? `<button type="button" class="tag-pill tag-suggest-more" style="font-size:0.68rem;padding:0.15rem 0.5rem;background:var(--ink);color:var(--white);border-style:dashed;">${expanded?'▲ 閉じる':'▼ もっと見る（'+(sorted.length-10)+'）'}</button>` : '');
+  suggestEl.querySelectorAll('.tag-pill:not(.tag-suggest-more)').forEach(b=>{
     b.addEventListener('click', ()=>{
       const tag = b.dataset.t;
       const cur2 = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
@@ -1826,6 +1829,8 @@ function _renderTagPills(inputEl, suggestEl, q){
       }
     });
   });
+  const moreBtn = suggestEl.querySelector('.tag-suggest-more');
+  if(moreBtn) moreBtn.addEventListener('click', ()=> _renderTagPills(inputEl, suggestEl, q, !expanded));
 }
 
 async function loadUserVideos(){
