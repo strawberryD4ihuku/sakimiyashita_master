@@ -1058,6 +1058,7 @@ async function sbDelete(table, id){
             <div>
               <div style="font-size:0.68rem;font-weight:700;color:var(--yellow);margin-bottom:0.25rem;">タグ（カンマ区切り）</div>
               <input id="prevTags" type="text" placeholder="例: ゲーム実況, コラボ">
+              <div id="prevTagSuggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
             </div>
             <div>
               <div style="font-size:0.68rem;font-weight:700;color:var(--yellow);margin-bottom:0.25rem;">年月日</div>
@@ -1543,6 +1544,8 @@ function renderVTagPills(v){
 }
 function getAllVidTags(){ return [...new Set(VIDEOS.flatMap(v=>v.tags))]; }
 
+let vidTagExpanded = false;
+
 function renderVidMonthSelect(){
   const sel = document.getElementById('vidMonthFilter');
   const months = [...new Set(VIDEOS.map(v=>vidYearMonth(v.date)).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
@@ -1553,16 +1556,25 @@ function renderVidTags(){
   renderVidMonthSelect();
   const q = (document.getElementById('vidTagSearch')?.value||'').toLowerCase();
   const row = document.getElementById('vidTagRow');
-  const allTags = getAllVidTags().filter(t=>!q||t.toLowerCase().includes(q));
-  row.innerHTML = allTags.map(t=>{
-    const count = VIDEOS.filter(v=>v.tags.includes(t)).length;
-    return `<button class="tag-pill${activeVidTag===t?' active':''}" data-t="${h(t)}">${h(t)}<span style="margin-left:0.3em;opacity:0.7;font-size:0.8em;">${count}</span></button>`;
-  }).join('');
+  // 使用数カウント→降順ソート→検索絞り込み
+  const sorted = getAllVidTags()
+    .map(t=>({ t, count: VIDEOS.filter(v=>v.tags.includes(t)).length }))
+    .sort((a,b)=>b.count-a.count)
+    .filter(({t})=>!q||t.toLowerCase().includes(q));
+  const limit = vidTagExpanded ? sorted.length : 10;
+  const visible = sorted.slice(0, limit);
+  row.innerHTML = visible.map(({t,count})=>
+    `<button class="tag-pill${activeVidTag===t?' active':''}" data-t="${h(t)}">${h(t)}<span style="margin-left:0.3em;opacity:0.7;font-size:0.8em;">${count}</span></button>`
+  ).join('') + (sorted.length > 10 ? `<button id="vidTagMoreBtn" class="tag-pill" style="background:var(--white);border-style:dashed;">${vidTagExpanded?'▲ 閉じる':'▼ もっと見る（'+(sorted.length-10)+'）'}</button>` : '');
   row.querySelectorAll('.tag-pill').forEach(b=>{
-    b.addEventListener('click',()=>{
-      activeVidTag = activeVidTag===b.dataset.t ? null : b.dataset.t;
-      vidPage=0; renderVidTags(); renderVidGrid();
-    });
+    if(b.id==='vidTagMoreBtn'){
+      b.addEventListener('click',()=>{ vidTagExpanded=!vidTagExpanded; renderVidTags(); });
+    } else {
+      b.addEventListener('click',()=>{
+        activeVidTag = activeVidTag===b.dataset.t ? null : b.dataset.t;
+        vidPage=0; renderVidTags(); renderVidGrid();
+      });
+    }
   });
 }
 
@@ -1606,6 +1618,7 @@ function renderVidGrid(){
         <input class="ef-title" value="${h(v.title)}">
         <label>タグ（カンマ区切り）</label>
         <input class="ef-tags" value="${h(v.tags.join(', '))}">
+        <div class="ef-tag-suggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
         <label>年月日</label>
         <input class="ef-date" type="date" value="${h(v.date||'')}">
         <label>メモ</label>
@@ -1637,7 +1650,12 @@ function renderVidGrid(){
       // 全フォームを閉じる
       grid.querySelectorAll('.vid-edit-form').forEach(f=>f.classList.remove('open'));
       grid.querySelectorAll('.edit-btn').forEach(eb=>eb.textContent='✎ 編集');
-      if(!isOpen){ form.classList.add('open'); b.textContent='✕ 閉じる'; }
+      if(!isOpen){
+        form.classList.add('open'); b.textContent='✕ 閉じる';
+        const tagInput = form.querySelector('.ef-tags');
+        const tagSuggest = form.querySelector('.ef-tag-suggest');
+        renderTagSuggest(tagInput, tagSuggest);
+      }
     });
   });
 
@@ -1714,6 +1732,7 @@ document.getElementById('fetchBtn').addEventListener('click', async()=>{
     document.getElementById('prevTitle').value = data.title||'';
   } catch(e){ document.getElementById('prevTitle').value=''; }
   document.getElementById('addPreview').style.display='block';
+  renderTagSuggest(document.getElementById('prevTags'), document.getElementById('prevTagSuggest'));
 });
 
 document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
@@ -1759,6 +1778,33 @@ document.getElementById('addCancelBtn').addEventListener('click',()=>{
 
 document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; renderVidGrid(); });
 document.getElementById('vidTagSearch').addEventListener('input', ()=>{ renderVidTags(); });
+
+function renderTagSuggest(inputEl, suggestEl){
+  const existing = getAllVidTags().sort((a,b)=>
+    VIDEOS.filter(v=>v.tags.includes(b)).length - VIDEOS.filter(v=>v.tags.includes(a)).length
+  );
+  suggestEl.innerHTML = existing.map(t=>
+    `<button type="button" class="tag-pill" data-t="${h(t)}" style="font-size:0.68rem;padding:0.15rem 0.5rem;">${h(t)}</button>`
+  ).join('');
+  suggestEl.querySelectorAll('.tag-pill').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const tag = b.dataset.t;
+      const cur = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+      if(!cur.includes(tag)){
+        inputEl.value = [...cur, tag].join(', ');
+        b.classList.add('active');
+      } else {
+        inputEl.value = cur.filter(s=>s!==tag).join(', ');
+        b.classList.remove('active');
+      }
+    });
+  });
+  // 既に入力済みのタグをactiveに
+  const cur = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+  suggestEl.querySelectorAll('.tag-pill').forEach(b=>{
+    if(cur.includes(b.dataset.t)) b.classList.add('active');
+  });
+}
 
 async function loadUserVideos(){
   const { data, error } = await _sb.from('user_videos').select('*').order('date', { ascending: false });
