@@ -1170,6 +1170,7 @@ async function sbDelete(table, id){
           <div>
             <label>タグ（カンマ区切り）</label>
             <input id="subTags" type="text" placeholder="例: ゲーム実況, ウマ娘">
+            <div id="subTagSuggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
           </div>
         </div>
         <div>
@@ -1183,6 +1184,9 @@ async function sbDelete(table, id){
       </div>
     </div>
 
+    <div style="margin-bottom:0.5rem;">
+      <input id="logTagSearch" type="text" placeholder="🏷 タグを絞り込む…" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.8rem;border-radius:20px;border:2px solid var(--ink);width:100%;box-sizing:border-box;max-width:280px;">
+    </div>
     <div class="log-tag-row" id="logTagRow"></div>
 
     <div class="admin-toggle-row" style="display:none;margin-bottom:0.8rem;">
@@ -1786,6 +1790,46 @@ document.getElementById('addCancelBtn').addEventListener('click',()=>{
 document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; renderVidTags(); renderVidGrid(); });
 document.getElementById('vidTagSearch').addEventListener('input', ()=>{ renderVidTags(); });
 
+
+function renderLogTagSuggest(inputEl, suggestEl){
+  if(!inputEl || !suggestEl) return;
+  let searchBox = suggestEl.previousElementSibling?.classList?.contains('log-tag-suggest-search')
+    ? suggestEl.previousElementSibling : null;
+  if(!searchBox){
+    searchBox = document.createElement('input');
+    searchBox.type = 'text';
+    searchBox.placeholder = '🔍 タグを検索…';
+    searchBox.className = 'log-tag-suggest-search';
+    searchBox.style.cssText = 'font-size:0.72rem;padding:0.25rem 0.6rem;border-radius:16px;border:2px solid var(--ink);width:100%;box-sizing:border-box;max-width:220px;margin-bottom:0.4rem;display:block;';
+    suggestEl.parentNode.insertBefore(searchBox, suggestEl);
+    searchBox.addEventListener('input', ()=> _renderLogTagPills(inputEl, suggestEl, searchBox.value, false));
+  }
+  _renderLogTagPills(inputEl, suggestEl, searchBox.value||'', false);
+}
+
+function _renderLogTagPills(inputEl, suggestEl, q, expanded){
+  const counts = {};
+  getAllLogTags().forEach(t=>{ counts[t] = allLogs().filter(e=>(e.tags||[]).includes(t)).length; });
+  const sorted = getAllLogTags()
+    .filter(t=>!q||t.toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=> counts[b]!==counts[a] ? counts[b]-counts[a] : a.localeCompare(b,'ja'));
+  const cur = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+  const limit = expanded ? sorted.length : 10;
+  const visible = sorted.slice(0, limit);
+  suggestEl.innerHTML = visible.map(t=>
+    `<button type="button" class="log-pill${cur.includes(t)?' active':''}" data-t="${h(t)}" style="font-size:0.68rem;padding:0.15rem 0.5rem;">${h(t)}</button>`
+  ).join('') + (sorted.length > 10 ? `<button type="button" class="log-pill log-tag-suggest-more" style="font-size:0.68rem;padding:0.15rem 0.5rem;background:var(--ink);color:var(--white);border-style:dashed;">${expanded?'▲ 閉じる':'▼ もっと見る（'+(sorted.length-10)+'）'}</button>` : '');
+  suggestEl.querySelectorAll('.log-pill:not(.log-tag-suggest-more)').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const tag = b.dataset.t;
+      const cur2 = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+      if(!cur2.includes(tag)){ inputEl.value = [...cur2, tag].join(', '); b.classList.add('active'); }
+      else { inputEl.value = cur2.filter(s=>s!==tag).join(', '); b.classList.remove('active'); }
+    });
+  });
+  const moreBtn = suggestEl.querySelector('.log-tag-suggest-more');
+  if(moreBtn) moreBtn.addEventListener('click', ()=> _renderLogTagPills(inputEl, suggestEl, q, !expanded));
+}
 function renderTagSuggest(inputEl, suggestEl){
   // 検索ボックスをsuggestElの前に挿入（初回のみ）
   let searchBox = suggestEl.previousElementSibling?.classList?.contains('tag-suggest-search')
@@ -2132,16 +2176,38 @@ function allLogs(){
 }
 function getAllLogTags(){ return [...new Set(allLogs().flatMap(e=>e.tags))]; }
 
+let logTagExpanded = false;
+
 function renderLogTags(){
+  const q = (document.getElementById('logTagSearch')?.value||'').toLowerCase();
   const row = document.getElementById('logTagRow');
-  row.innerHTML = ['すべて',...getAllLogTags()].map(t=>`
-    <button class="${t==='すべて'?'log-pill':'log-pill'}${(t==='すべて'&&!activeLogTag)||(activeLogTag===t)?' active':''}" data-t="${h(t)}">${h(t)}</button>
-  `).join('');
+  // 現在の絞り込み条件に合致する発言のみ対象（タグ以外）
+  const searchQ = (document.getElementById('logSearch')?.value||'').toLowerCase();
+  const baseLogs = allLogs().filter(e=>{
+    if(!searchQ) return true;
+    return (e.quote||'').toLowerCase().includes(searchQ);
+  });
+  // 使用頻度→50音順でソート
+  const tagCounts = {};
+  baseLogs.forEach(e=>(e.tags||[]).forEach(t=>{ tagCounts[t]=(tagCounts[t]||0)+1; }));
+  const sorted = [...new Set(baseLogs.flatMap(e=>e.tags||[]))]
+    .filter(t=>!q||t.toLowerCase().includes(q))
+    .sort((a,b)=> tagCounts[b]!==tagCounts[a] ? tagCounts[b]-tagCounts[a] : a.localeCompare(b,'ja'))
+    .map(t=>({ t, count: tagCounts[t]||0 }));
+  const limit = logTagExpanded ? sorted.length : 10;
+  const visible = sorted.slice(0, limit);
+  row.innerHTML = visible.map(({t,count})=>
+    `<button class="log-pill${activeLogTag===t?' active':''}" data-t="${h(t)}">${h(t)}<span style="margin-left:0.3em;opacity:0.7;font-size:0.8em;">${count}</span></button>`
+  ).join('') + (sorted.length > 10 ? `<button id="logTagMoreBtn" class="log-pill" style="background:var(--ink);color:var(--white);border-style:dashed;">${logTagExpanded?'▲ 閉じる':'▼ もっと見る（'+(sorted.length-10)+'）'}</button>` : '');
   row.querySelectorAll('.log-pill').forEach(b=>{
-    b.addEventListener('click',()=>{
-      activeLogTag = b.dataset.t==='すべて'?null:b.dataset.t;
-      renderLogTags(); renderLogList();
-    });
+    if(b.id==='logTagMoreBtn'){
+      b.addEventListener('click',()=>{ logTagExpanded=!logTagExpanded; renderLogTags(); });
+    } else {
+      b.addEventListener('click',()=>{
+        activeLogTag = activeLogTag===b.dataset.t ? null : b.dataset.t;
+        renderLogTags(); renderLogList();
+      });
+    }
   });
 }
 
@@ -2164,7 +2230,7 @@ function renderLogList(){
         </div>
         <div class="log-quote">「${h(e.quote)}」</div>
         <div class="log-tags">${renderLogTagPills(e)}</div>
-        ${e.src ? `<div class="log-source">📎 ${h(e.src)}</div>` : ''}
+        
         ${e.videoId||e.youtubeUrl
           ? `<button class="log-src-btn" data-vid="${e.videoId||''}" data-url="${e.youtubeUrl||''}">▶ 動画で見る</button>`
           : ''}
@@ -2175,6 +2241,7 @@ function renderLogList(){
           <input class="lef-episode" value="${h(e.episode)}">
           <label>タグ（カンマ区切り）</label>
           <input class="lef-tags" value="${h((e.tags||[]).join(', '))}">
+          <div class="lef-tag-suggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
           <label>出典テキスト</label>
           <input class="lef-src" value="${h(e.src)}">
           <div class="lef-btns">
@@ -2214,7 +2281,12 @@ function renderLogList(){
       const isOpen = form.classList.contains('open');
       el.querySelectorAll('.log-edit-form').forEach(f=>f.classList.remove('open'));
       el.querySelectorAll('.log-edit-btn').forEach(eb=>eb.textContent='✎');
-      if(!isOpen){ form.classList.add('open'); b.textContent='✕'; }
+      if(!isOpen){
+        form.classList.add('open'); b.textContent='✕';
+        const tagInput = form.querySelector('.lef-tags');
+        const tagSuggest = form.querySelector('.lef-tag-suggest');
+        renderLogTagSuggest(tagInput, tagSuggest);
+      }
     });
   });
 
@@ -2427,7 +2499,8 @@ function renderLogAdminReports(){
   });
 }
 
-(async()=>{ await loadUserLogs(); renderLogTags(); renderLogList(); })();
+(async()=>{ await loadUserLogs(); renderLogTags(); renderLogList(); renderLogTagSuggest(document.getElementById('subTags'), document.getElementById('subTagSuggest')); })();
+document.getElementById('logTagSearch').addEventListener('input', ()=>{ logTagExpanded=false; renderLogTags(); });
 
 /* ══════════════════════════════
    KONAMI CODE → 管理人パネル解放
