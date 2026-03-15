@@ -1565,7 +1565,7 @@ function renderVidTags(){
   const visible = sorted.slice(0, limit);
   row.innerHTML = visible.map(({t,count})=>
     `<button class="tag-pill${activeVidTag===t?' active':''}" data-t="${h(t)}">${h(t)}<span style="margin-left:0.3em;opacity:0.7;font-size:0.8em;">${count}</span></button>`
-  ).join('') + (sorted.length > 10 ? `<button id="vidTagMoreBtn" class="tag-pill" style="background:var(--white);border-style:dashed;">${vidTagExpanded?'▲ 閉じる':'▼ もっと見る（'+(sorted.length-10)+'）'}</button>` : '');
+  ).join('') + (sorted.length > 10 ? `<button id="vidTagMoreBtn" class="tag-pill" style="background:var(--ink);color:var(--white);border-style:dashed;">${vidTagExpanded?'▲ 閉じる':'▼ もっと見る（'+(sorted.length-10)+'）'}</button>` : '');
   row.querySelectorAll('.tag-pill').forEach(b=>{
     if(b.id==='vidTagMoreBtn'){
       b.addEventListener('click',()=>{ vidTagExpanded=!vidTagExpanded; renderVidTags(); });
