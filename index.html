@@ -321,6 +321,7 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   background: var(--white); min-height: 72px; padding: 0.4rem;
   cursor: default; position: relative;
 }
+.birthday-cell { border: 2px solid var(--pink) !important; }
 .cal-cell.has-event { cursor: pointer; background: #f2a4c4; }
 .cal-cell.has-event .cal-day { color: #5a1a35; font-weight: 900; }
 .cal-cell.has-event:active { background: #e88aad; }
@@ -555,6 +556,7 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
 }
 .admin-panel.open { display: block; }
 .admin-panel h4 { margin: 0 0 0.8rem; font-size: 0.82rem; color: var(--pink-lt); }
+#logAdminPanel { background: rgba(60,20,80,0.82); color: var(--white); }
 .admin-login { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .admin-login input {
   flex: 1; min-width: 150px;
@@ -956,7 +958,7 @@ async function sbDelete(table, id){
   <a class="nav-logo" href="javascript:void(0)" onclick="navTo('hero')">宮下<span>Fan!</span></a>
   <ul class="nav-links">
     <li><a href="javascript:void(0)" onclick="navTo('works')">出演作品</a></li>
-    <li><a href="javascript:void(0)" onclick="navTo('schedule')"><span class="nav-full">イベント出演予定</span><span class="nav-short">予定</span></a></li>
+    <li><a href="javascript:void(0)" onclick="navTo('schedule')"><span class="nav-full">イベント予定</span><span class="nav-short">予定</span></a></li>
     <li><a href="javascript:void(0)" onclick="navTo('videos')">動画館</a></li>
     <li><a href="javascript:void(0)" onclick="navTo('taglog')">発言集</a></li>
   </ul>
@@ -1008,7 +1010,7 @@ async function sbDelete(table, id){
   <div class="section-inner">
     <div class="sec-head">
       <span class="sec-label">✦ Schedule</span>
-      <h2 class="sec-title">イベント出演予定</h2>
+      <h2 class="sec-title">イベント予定</h2>
     </div>
     <div class="cal-nav">
       <button class="cal-arrow" id="calPrev">◀</button>
@@ -1098,6 +1100,10 @@ async function sbDelete(table, id){
         <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(255,255,255,0.1);">
           <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">🏷 タグ削除申請</div>
           <div id="adminTagReportList"></div>
+        </div>
+        <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">🎬 動画を直接削除</div>
+          <div id="adminDirectVidList"></div>
         </div>
       </div>
     </div>
@@ -1209,6 +1215,10 @@ async function sbDelete(table, id){
         <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(122,68,187,0.2);">
           <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">🏷 タグ削除申請</div>
           <div id="logAdminTagReportList"></div>
+        </div>
+        <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(122,68,187,0.2);">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">💬 発言を直接削除</div>
+          <div id="logAdminDirectList"></div>
         </div>
       </div>
     </div>
@@ -1477,11 +1487,13 @@ function renderCal(){
   for(let d=1;d<=days;d++){
     const key=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday = calY===TODAY.getFullYear()&&calM===TODAY.getMonth()&&d===TODAY.getDate();
-    const evs = SCHEDULE[key]||[];
+    const evs = [...(SCHEDULE[key]||[])];
+    const isBirthday = (calM+1)===12 && d===4;
+    if(isBirthday) evs.unshift({ text:'🎂 宮下早紀 お誕生日', type:'birthday' });
     const hasEv = evs.length > 0;
-    html+=`<div class="cal-cell${isToday?' today':''}${hasEv?' has-event':''}" data-key="${key}">
+    html+=`<div class="cal-cell${isToday?' today':''}${hasEv?' has-event':''}${isBirthday?' birthday-cell':''}" data-key="${key}">
       <div class="cal-day">${d}</div>
-      ${hasEv ? `<div class="cal-event-dot"></div>` : ''}
+      ${isBirthday ? `<div style="font-size:0.55rem;line-height:1;color:var(--pink);font-weight:900;">🎂</div>` : (hasEv ? `<div class="cal-event-dot"></div>` : '')}
     </div>`;
   }
   grid.innerHTML = html;
@@ -1492,7 +1504,7 @@ function renderCal(){
       const [y,m,d] = key.split('-');
       document.getElementById('calModalDate').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日`;
       document.getElementById('calModalEvents').innerHTML = evs.map(e=>{
-        const bg = e.type==='live' ? '#fce8f0' : '#dff0f9';
+        const bg = e.type==='live' ? '#fce8f0' : e.type==='birthday' ? '#fff0f8' : '#dff0f9';
         return `<div class="cal-modal-event-card" style="background:${bg}">
           <div style="font-weight:900;font-size:0.88rem;line-height:1.4;margin-bottom:0.4rem;">
             🎤 ${h(e.text)}
@@ -1938,7 +1950,7 @@ document.getElementById('reportSubmitBtn').addEventListener('click', async()=>{
 document.getElementById('adminToggleBtn').addEventListener('click',()=>{
   const panel = document.getElementById('adminPanel');
   panel.classList.toggle('open');
-  if(panel.classList.contains('open') && adminUnlocked){ renderAdminReports(); renderTagAdminReports('vid'); }
+  if(panel.classList.contains('open') && adminUnlocked){ renderAdminReports(); renderTagAdminReports('vid'); renderAdminDirectVids(); }
 });
 document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
   const email = document.getElementById('adminEmail').value.trim();
@@ -1949,7 +1961,7 @@ document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
     document.getElementById('adminLoginArea').style.display='none';
     document.getElementById('adminContent').style.display='block';
     document.getElementById('adminPwErr').style.display='none';
-    await loadReports(); await loadTagReports(); renderAdminReports(); renderTagAdminReports('vid');
+    await loadReports(); await loadTagReports(); renderAdminReports(); renderTagAdminReports('vid'); renderAdminDirectVids();
   } else {
     document.getElementById('adminPwErr').style.display='inline';
     document.getElementById('adminPw').value='';
@@ -2060,6 +2072,54 @@ document.getElementById('tagReportSubmitBtn').addEventListener('click', async()=
   tagReportTarget = null;
 });
 loadTagReports();
+
+function renderAdminDirectVids(){
+  const list = document.getElementById('adminDirectVidList'); if(!list) return;
+  if(!VIDEOS.length){ list.innerHTML='<div class="admin-empty">動画がありません</div>'; return; }
+  list.innerHTML = VIDEOS.map(v=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+      <span style="font-size:0.72rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--white);">${h(v.title)}</span>
+      <button class="admin-direct-del-btn" data-vid="${h(v.id)}" style="font-size:0.62rem;padding:0.15rem 0.5rem;background:var(--pink);color:var(--white);border:none;border-radius:8px;cursor:pointer;white-space:nowrap;">削除</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('.admin-direct-del-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      const v = VIDEOS.find(x=>x.id===b.dataset.vid); if(!v) return;
+      if(!confirm(`「${v.title}」を削除しますか？`)) return;
+      await sbDelete('user_videos', b.dataset.vid);
+      VIDEOS = VIDEOS.filter(x=>x.id!==b.dataset.vid);
+      renderVidTags(); renderVidGrid(); renderAdminDirectVids();
+      showToast('削除しました');
+    });
+  });
+}
+
+function renderLogAdminDirect(){
+  const list = document.getElementById('logAdminDirectList'); if(!list) return;
+  const logs = allLogs();
+  if(!logs.length){ list.innerHTML='<div class="admin-empty">発言がありません</div>'; return; }
+  list.innerHTML = logs.map(e=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(122,68,187,0.2);">
+      <span style="font-size:0.72rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">「${h((e.quote||'').slice(0,40))}」</span>
+      <button class="log-direct-del-btn" data-eid="${h(e.id||'')}" data-official="${e.isOfficial?'1':'0'}" style="font-size:0.62rem;padding:0.15rem 0.5rem;background:var(--pink);color:var(--white);border:none;border-radius:8px;cursor:pointer;white-space:nowrap;">削除</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('.log-direct-del-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      const logs2 = allLogs(); const e = logs2.find(x=>String(x.id)===b.dataset.eid); if(!e) return;
+      if(!confirm(`この発言を削除しますか？\n「${(e.quote||'').slice(0,40)}」`)) return;
+      if(b.dataset.official==='1'){
+        const idx = LOG_ENTRIES.findIndex(x=>x.id===b.dataset.eid);
+        if(idx!==-1) LOG_ENTRIES.splice(idx,1);
+      } else {
+        await sbDelete('user_logs', b.dataset.eid);
+        await loadUserLogs();
+      }
+      renderLogTags(); renderLogList(); renderLogAdminDirect();
+      showToast('削除しました');
+    });
+  });
+}
 
 function renderTagAdminReports(section){
   const listId = section==='vid' ? 'adminTagReportList' : 'logAdminTagReportList';
@@ -2242,8 +2302,7 @@ function renderLogList(){
           <label>タグ（カンマ区切り）</label>
           <input class="lef-tags" value="${h((e.tags||[]).join(', '))}">
           <div class="lef-tag-suggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
-          <label>出典テキスト</label>
-          <input class="lef-src" value="${h(e.src)}">
+          <input class="lef-src" value="${h(e.src)}" style="display:none;">
           <div class="lef-btns">
             <button class="lef-save" data-id="${e.id||''}" data-official="${e.isOfficial?'1':'0'}">保存</button>
             <button class="lef-cancel" data-id="${e.id||''}">キャンセル</button>
@@ -2434,7 +2493,7 @@ document.getElementById('logReportSubmitBtn').addEventListener('click', async()=
 document.getElementById('logAdminToggleBtn').addEventListener('click',()=>{
   const panel = document.getElementById('logAdminPanel');
   panel.classList.toggle('open');
-  if(panel.classList.contains('open') && logAdminUnlocked){ renderLogAdminReports(); renderTagAdminReports('log'); }
+  if(panel.classList.contains('open') && logAdminUnlocked){ renderLogAdminReports(); renderTagAdminReports('log'); renderLogAdminDirect(); }
 });
 document.getElementById('logAdminLoginBtn').addEventListener('click', async()=>{
   const email = document.getElementById('logAdminEmail').value.trim();
@@ -2445,7 +2504,7 @@ document.getElementById('logAdminLoginBtn').addEventListener('click', async()=>{
     document.getElementById('logAdminLoginArea').style.display='none';
     document.getElementById('logAdminContent').style.display='block';
     document.getElementById('logAdminPwErr').style.display='none';
-    await loadLogReports(); await loadTagReports(); renderLogAdminReports(); renderTagAdminReports('log');
+    await loadLogReports(); await loadTagReports(); renderLogAdminReports(); renderTagAdminReports('log'); renderLogAdminDirect();
   } else {
     document.getElementById('logAdminPwErr').style.display='inline';
     document.getElementById('logAdminPw').value='';
