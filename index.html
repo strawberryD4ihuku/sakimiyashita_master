@@ -2342,7 +2342,12 @@ function renderLogList(){
   });
 }
 
+let _subBtnBusy = false;
 document.getElementById('subBtn').addEventListener('click', async()=>{
+  if(_subBtnBusy) return;
+  _subBtnBusy = true;
+  const btn = document.getElementById('subBtn');
+  btn.disabled = true; btn.textContent = '投稿中…';
   const quote   = document.getElementById('subQuote').value.trim();
   const episode = document.getElementById('subEpisode').value.trim();
   const tagsRaw = document.getElementById('subTags').value.trim();
@@ -2350,15 +2355,16 @@ document.getElementById('subBtn').addEventListener('click', async()=>{
   const msg     = document.getElementById('subMsg');
 
   if(!quote){
-    msg.textContent='⚠ 発言内容を入力してください。'; msg.style.color='var(--pink)'; msg.style.display='inline'; return;
+    msg.textContent='⚠ 発言内容を入力してください。'; msg.style.color='var(--pink)'; msg.style.display='inline';
+    btn.disabled=false; btn.textContent='投稿する'; _subBtnBusy=false; return;
   }
-  // 長さバリデーション
   if(quote.length > 1000){
-    msg.textContent='⚠ 発言内容は1000文字以内にしてください。'; msg.style.color='var(--pink)'; msg.style.display='inline'; return;
+    msg.textContent='⚠ 発言内容は1000文字以内にしてください。'; msg.style.color='var(--pink)'; msg.style.display='inline';
+    btn.disabled=false; btn.textContent='投稿する'; _subBtnBusy=false; return;
   }
-  // URLバリデーション（YouTubeのみ許可）
   if(vidUrl && !vidUrl.match(/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//)){
-    msg.textContent='⚠ 動画URLはYouTubeのURLのみ入力できます。'; msg.style.color='var(--pink)'; msg.style.display='inline'; return;
+    msg.textContent='⚠ 動画URLはYouTubeのURLのみ入力できます。'; msg.style.color='var(--pink)'; msg.style.display='inline';
+    btn.disabled=false; btn.textContent='投稿する'; _subBtnBusy=false; return;
   }
   const tags = tagsRaw ? tagsRaw.split(',').map(t=>t.trim().slice(0,30)).filter(Boolean).slice(0,10) : [];
   const row = {
@@ -2378,6 +2384,7 @@ document.getElementById('subBtn').addEventListener('click', async()=>{
   msg.textContent='✓ 投稿しました！ありがとうございます。'; msg.style.color='var(--mint)'; msg.style.display='inline';
   setTimeout(()=>msg.style.display='none', 3500);
   renderLogTags(); renderLogList();
+  btn.disabled=false; btn.textContent='投稿する'; _subBtnBusy=false;
 });
 
 /* ══════════════════════════════
