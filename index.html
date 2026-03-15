@@ -1550,15 +1550,21 @@ function renderVidMonthSelect(){
   const sel = document.getElementById('vidMonthFilter');
   const months = [...new Set(VIDEOS.map(v=>vidYearMonth(v.date)).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
   sel.innerHTML = '<option value="">📅 すべての月</option>' + months.map(m=>`<option value="${m}"${activeVidMonth===m?' selected':''}>${m}</option>`).join('');
-  sel.onchange = ()=>{ activeVidMonth = sel.value||null; vidPage=0; renderVidGrid(); };
+  sel.onchange = ()=>{ activeVidMonth = sel.value||null; vidPage=0; renderVidTags(); renderVidGrid(); };
 }
 function renderVidTags(){
   renderVidMonthSelect();
   const q = (document.getElementById('vidTagSearch')?.value||'').toLowerCase();
+  const searchQ = document.getElementById('vidSearch').value.toLowerCase();
   const row = document.getElementById('vidTagRow');
-  // 使用数カウント→降順ソート→検索絞り込み
-  const sorted = getAllVidTags()
-    .map(t=>({ t, count: VIDEOS.filter(v=>v.tags.includes(t)).length }))
+  // 現在の絞り込み条件（月・テキスト）に合致する動画のみ対象
+  const filteredVids = VIDEOS.filter(v=>{
+    const matchQ = !searchQ || v.title.toLowerCase().includes(searchQ) || (v.desc||'').toLowerCase().includes(searchQ);
+    const matchM = !activeVidMonth || vidYearMonth(v.date)===activeVidMonth;
+    return matchQ && matchM;
+  });
+  const sorted = [...new Set(filteredVids.flatMap(v=>v.tags))]
+    .map(t=>({ t, count: filteredVids.filter(v=>v.tags.includes(t)).length }))
     .sort((a,b)=>b.count-a.count)
     .filter(({t})=>!q||t.toLowerCase().includes(q));
   const limit = vidTagExpanded ? sorted.length : 10;
@@ -1776,33 +1782,49 @@ document.getElementById('addCancelBtn').addEventListener('click',()=>{
   pendingVid=null;
 });
 
-document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; renderVidGrid(); });
+document.getElementById('vidSearch').addEventListener('input', ()=>{ vidPage=0; renderVidTags(); renderVidGrid(); });
 document.getElementById('vidTagSearch').addEventListener('input', ()=>{ renderVidTags(); });
 
 function renderTagSuggest(inputEl, suggestEl){
-  const existing = getAllVidTags().sort((a,b)=>
-    VIDEOS.filter(v=>v.tags.includes(b)).length - VIDEOS.filter(v=>v.tags.includes(a)).length
-  );
-  suggestEl.innerHTML = existing.map(t=>
-    `<button type="button" class="tag-pill" data-t="${h(t)}" style="font-size:0.68rem;padding:0.15rem 0.5rem;">${h(t)}</button>`
+  // 検索ボックスをsuggestElの前に挿入（初回のみ）
+  let searchBox = suggestEl.previousElementSibling?.classList?.contains('tag-suggest-search')
+    ? suggestEl.previousElementSibling
+    : null;
+  if(!searchBox){
+    searchBox = document.createElement('input');
+    searchBox.type = 'text';
+    searchBox.placeholder = '🔍 タグを検索…';
+    searchBox.className = 'tag-suggest-search';
+    searchBox.style.cssText = 'font-size:0.72rem;padding:0.25rem 0.6rem;border-radius:16px;border:2px solid var(--ink);width:100%;box-sizing:border-box;max-width:220px;margin-bottom:0.4rem;display:block;';
+    suggestEl.parentNode.insertBefore(searchBox, suggestEl);
+    searchBox.addEventListener('input', ()=> _renderTagPills(inputEl, suggestEl, searchBox.value));
+  }
+  _renderTagPills(inputEl, suggestEl, searchBox.value||'');
+}
+
+function _renderTagPills(inputEl, suggestEl, q){
+  // 使用頻度→50音順でソート
+  const counts = {};
+  getAllVidTags().forEach(t=>{ counts[t] = VIDEOS.filter(v=>v.tags.includes(t)).length; });
+  const sorted = getAllVidTags()
+    .filter(t=>!q||t.toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=> counts[b]!==counts[a] ? counts[b]-counts[a] : a.localeCompare(b,'ja'));
+  const cur = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+  suggestEl.innerHTML = sorted.map(t=>
+    `<button type="button" class="tag-pill${cur.includes(t)?' active':''}" data-t="${h(t)}" style="font-size:0.68rem;padding:0.15rem 0.5rem;">${h(t)}</button>`
   ).join('');
   suggestEl.querySelectorAll('.tag-pill').forEach(b=>{
     b.addEventListener('click', ()=>{
       const tag = b.dataset.t;
-      const cur = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
-      if(!cur.includes(tag)){
-        inputEl.value = [...cur, tag].join(', ');
+      const cur2 = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+      if(!cur2.includes(tag)){
+        inputEl.value = [...cur2, tag].join(', ');
         b.classList.add('active');
       } else {
-        inputEl.value = cur.filter(s=>s!==tag).join(', ');
+        inputEl.value = cur2.filter(s=>s!==tag).join(', ');
         b.classList.remove('active');
       }
     });
-  });
-  // 既に入力済みのタグをactiveに
-  const cur = inputEl.value.split(',').map(s=>s.trim()).filter(Boolean);
-  suggestEl.querySelectorAll('.tag-pill').forEach(b=>{
-    if(cur.includes(b.dataset.t)) b.classList.add('active');
   });
 }
 
