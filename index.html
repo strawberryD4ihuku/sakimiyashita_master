@@ -704,7 +704,7 @@ section { position: relative; z-index: 1; padding: 5rem 2rem; }
   position: relative;
 }
 .log-entry:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-m); }
-.log-meta { min-width: 88px; max-width: 110px; word-break: keep-all; font-size: 0.68rem; font-weight: 700; color: var(--purple); padding-top: 2px; line-height: 1.5; }
+.log-meta { min-width: 88px; max-width: 110px; word-break: break-all; overflow-wrap: break-word; font-size: 0.68rem; font-weight: 700; color: var(--purple); padding-top: 2px; line-height: 1.5; flex-shrink: 0; }
 .log-body { flex: 1; min-width: 0; overflow-wrap: break-word; }
 @media(max-width:768px){
   .log-entry { flex-direction: column; gap: 0.5rem; }
