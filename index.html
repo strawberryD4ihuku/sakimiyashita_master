@@ -2346,6 +2346,8 @@ function renderLogList(){
           <input class="lef-episode" value="${h(e.episode)}">
           <label>発言日（任意）</label>
           <input class="lef-spoken-date" type="text" placeholder="例: 2026年3月" value="${h(e.spokenDate||'')}">
+          <label>関連動画URL（任意）</label>
+          <input class="lef-video-url" type="text" placeholder="https://www.youtube.com/watch?v=…" value="${h(e.youtubeUrl||'')}">
           <label>タグ（カンマ区切り）</label>
           <input class="lef-tags" value="${h((e.tags||[]).join(', '))}">
           <div class="lef-tag-suggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
@@ -2406,6 +2408,11 @@ function renderLogList(){
       const newTags    = form.querySelector('.lef-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
       const newSrc     = form.querySelector('.lef-src').value.trim();
       const newSpokenDate = form.querySelector('.lef-spoken-date')?.value.trim() || null;
+      const newVideoUrl   = form.querySelector('.lef-video-url')?.value.trim() || null;
+      // URLバリデーション
+      if(newVideoUrl && !newVideoUrl.match(/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//)){
+        alert('⚠ 動画URLはYouTubeのURLのみ入力できます。'); return;
+      }
       if(b.dataset.official==='1'){
         // 公式エントリーはLOG_ENTRIES配列を直接更新（ページ内メモリのみ）
         const idx = LOG_ENTRIES.findIndex((_,i)=>LOG_ENTRIES[i]===LOG_ENTRIES.find(x=>
@@ -2424,9 +2431,11 @@ function renderLogList(){
           if(newQuote) entry.quote = newQuote;
           entry.episode = newEpisode; entry.tags = newTags; entry.src = newSrc;
           entry.spoken_date = newSpokenDate;
+          entry.youtube_url = newVideoUrl;
           await sbUpdate('user_logs', entry.id, {
             quote: entry.quote, episode: entry.episode,
-            tags: entry.tags, src: entry.src, spoken_date: newSpokenDate
+            tags: entry.tags, src: entry.src,
+            spoken_date: newSpokenDate, youtube_url: newVideoUrl
           });
         }
       }
