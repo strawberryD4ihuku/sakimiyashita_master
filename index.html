@@ -2373,10 +2373,11 @@ function renderLogList(){
   });
   el.querySelectorAll('.log-src-btn').forEach(b=>{
     b.addEventListener('click',()=>{
-      if(b.dataset.vid){
-        document.getElementById('videos').scrollIntoView({behavior:'smooth'});
-        setTimeout(()=>openModal(b.dataset.vid),600);
-      } else if(b.dataset.url) window.open(b.dataset.url,'_blank');
+      if(b.dataset.url) window.open(b.dataset.url,'_blank');
+      else if(b.dataset.vid){
+        const v = VIDEOS.find(x=>x.id===b.dataset.vid);
+        if(v) window.open(`https://www.youtube.com/watch?v=${v.youtubeId}`,'_blank');
+      }
     });
   });
 
