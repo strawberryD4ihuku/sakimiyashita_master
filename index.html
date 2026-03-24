@@ -1210,6 +1210,14 @@ async function sbDelete(table, id){
             <input id="subEpisode" type="text" placeholder="例: Streaming Club 第3回">
           </div>
           <div>
+            <label>発言日（任意）</label>
+            <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+              <select id="subYear" style="font-size:0.78rem;padding:0.3rem 0.5rem;border-radius:8px;border:2px solid var(--ink);"><option value="">年</option></select>
+              <select id="subMonth" style="font-size:0.78rem;padding:0.3rem 0.5rem;border-radius:8px;border:2px solid var(--ink);"><option value="">月</option></select>
+              <select id="subDay" style="font-size:0.78rem;padding:0.3rem 0.5rem;border-radius:8px;border:2px solid var(--ink);"><option value="">日</option></select>
+            </div>
+          </div>
+          <div>
             <label>タグ（カンマ区切り）</label>
             <input id="subTags" type="text" placeholder="例: ゲーム実況, ウマ娘">
             <div id="subTagSuggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
@@ -2263,10 +2271,10 @@ function allLogs(){
     ...USER_LOGS.map(e=>({
       ...e,
       isOfficial: false,
-      // Supabaseのsnake_caseをキャメルケースに統一
       youtubeUrl: e.youtube_url || e.youtubeUrl || null,
       videoId:    e.video_id    || e.videoId    || null,
       date: e.created_at ? new Date(e.created_at).toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) : '',
+      spokenDate: e.spoken_date || null,
       tags: Array.isArray(e.tags) ? e.tags : [],
     })),
   ];
@@ -2318,7 +2326,7 @@ function renderLogList(){
   }
   el.innerHTML = list.map(e=>`
     <div class="log-entry" data-id="${e.id||''}">
-      <div class="log-meta">${h(e.date)}<br>${h(e.episode)}</div>
+      <div class="log-meta">${h(e.date)}<br>${h(e.episode)}${e.spokenDate ? `<br><span style="color:var(--pink);font-size:0.65rem;">📅 ${h(e.spokenDate)}</span>` : ''}</div>
       <div class="log-body">
         <div class="log-badge-row">
           ${e.isOfficial
@@ -2336,6 +2344,8 @@ function renderLogList(){
           <textarea class="lef-quote" rows="3">${h(e.quote)}</textarea>
           <label>出典・配信回</label>
           <input class="lef-episode" value="${h(e.episode)}">
+          <label>発言日（任意）</label>
+          <input class="lef-spoken-date" type="text" placeholder="例: 2026年3月" value="${h(e.spokenDate||'')}">
           <label>タグ（カンマ区切り）</label>
           <input class="lef-tags" value="${h((e.tags||[]).join(', '))}">
           <div class="lef-tag-suggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
@@ -2395,6 +2405,7 @@ function renderLogList(){
       const newEpisode = form.querySelector('.lef-episode').value.trim();
       const newTags    = form.querySelector('.lef-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
       const newSrc     = form.querySelector('.lef-src').value.trim();
+      const newSpokenDate = form.querySelector('.lef-spoken-date')?.value.trim() || null;
       if(b.dataset.official==='1'){
         // 公式エントリーはLOG_ENTRIES配列を直接更新（ページ内メモリのみ）
         const idx = LOG_ENTRIES.findIndex((_,i)=>LOG_ENTRIES[i]===LOG_ENTRIES.find(x=>
@@ -2405,15 +2416,17 @@ function renderLogList(){
         if(entry){
           if(newQuote) entry.quote = newQuote;
           entry.episode = newEpisode; entry.tags = newTags; entry.src = newSrc;
+          entry.spokenDate = newSpokenDate;
         }
       } else {
         const entry = USER_LOGS.find(x=>x.id===b.dataset.id);
         if(entry){
           if(newQuote) entry.quote = newQuote;
           entry.episode = newEpisode; entry.tags = newTags; entry.src = newSrc;
+          entry.spoken_date = newSpokenDate;
           await sbUpdate('user_logs', entry.id, {
             quote: entry.quote, episode: entry.episode,
-            tags: entry.tags, src: entry.src
+            tags: entry.tags, src: entry.src, spoken_date: newSpokenDate
           });
         }
       }
@@ -2449,6 +2462,10 @@ document.getElementById('subBtn').addEventListener('click', async()=>{
   const tagsRaw = document.getElementById('subTags').value.trim();
   const vidUrl  = document.getElementById('subVideo').value.trim();
   const msg     = document.getElementById('subMsg');
+  const sY = document.getElementById('subYear').value;
+  const sM = document.getElementById('subMonth').value;
+  const sD = document.getElementById('subDay').value;
+  const spokenDate = sY ? `${sY}${sM?`年${sM}月`:'年'}${sD&&sM?`${sD}日`:''}` : null;
 
   if(!quote){
     msg.textContent='⚠ 発言内容を入力してください。'; msg.style.color='var(--pink)'; msg.style.display='inline';
@@ -2469,6 +2486,7 @@ document.getElementById('subBtn').addEventListener('click', async()=>{
     tags,
     youtube_url: vidUrl||null,
     video_id: null,
+    spoken_date: spokenDate,
   };
   if(vidUrl){
     const vid = extractYtId(vidUrl);
@@ -2477,6 +2495,7 @@ document.getElementById('subBtn').addEventListener('click', async()=>{
   await sbInsert('user_logs', row);
   await loadUserLogs();
   ['subQuote','subEpisode','subTags','subVideo'].forEach(id=>document.getElementById(id).value='');
+  ['subYear','subMonth','subDay'].forEach(id=>document.getElementById(id).selectedIndex=0);
   msg.textContent='✓ 投稿しました！ありがとうございます。'; msg.style.color='var(--mint)'; msg.style.display='inline';
   setTimeout(()=>msg.style.display='none', 3500);
   renderLogTags(); renderLogList();
@@ -2602,7 +2621,18 @@ function renderLogAdminReports(){
   });
 }
 
-(async()=>{ await loadUserLogs(); renderLogTags(); renderLogList(); renderLogTagSuggest(document.getElementById('subTags'), document.getElementById('subTagSuggest')); })();
+(async()=>{
+  // 発言日セレクト初期化
+  const ySel = document.getElementById('subYear');
+  const mSel = document.getElementById('subMonth');
+  const dSel = document.getElementById('subDay');
+  const curY = new Date().getFullYear();
+  for(let y=curY; y>=2015; y--) ySel.innerHTML += `<option value="${y}">${y}年</option>`;
+  for(let m=1; m<=12; m++) mSel.innerHTML += `<option value="${m}">${m}月</option>`;
+  for(let d=1; d<=31; d++) dSel.innerHTML += `<option value="${d}">${d}日</option>`;
+
+  await loadUserLogs(); renderLogTags(); renderLogList(); renderLogTagSuggest(document.getElementById('subTags'), document.getElementById('subTagSuggest'));
+})();
 document.getElementById('logTagSearch').addEventListener('input', ()=>{ logTagExpanded=false; renderLogTags(); });
 
 /* ══════════════════════════════
