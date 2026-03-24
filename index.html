@@ -2326,7 +2326,7 @@ function renderLogList(){
   }
   el.innerHTML = list.map(e=>`
     <div class="log-entry" data-id="${e.id||''}">
-      <div class="log-meta">${h(e.date)}<br>${h(e.episode)}${e.spokenDate ? `<br><span style="color:var(--pink);font-size:0.65rem;">📅 ${h(e.spokenDate)}</span>` : ''}</div>
+      <div class="log-meta">${h(e.episode)}${e.spokenDate ? `<br><span style="color:var(--pink);font-size:0.65rem;">📅 ${h(e.spokenDate)}</span>` : ''}</div>
       <div class="log-body">
         <div class="log-badge-row">
           ${e.isOfficial
