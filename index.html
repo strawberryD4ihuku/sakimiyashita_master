@@ -1237,6 +1237,8 @@ async function sbDelete(table, id){
     <div style="margin-bottom:0.5rem;">
       <input id="logTagSearch" type="text" placeholder="🏷 タグを絞り込む…" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.8rem;border-radius:20px;border:2px solid var(--ink);width:100%;box-sizing:border-box;max-width:280px;">
     </div>
+    <div style="margin-bottom:0.5rem;"><select id="logMonthFilter" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:20px;border:2px solid var(--ink);background:var(--white);cursor:pointer;"></select></div>
+    </div>
     <div class="log-tag-row" id="logTagRow"></div>
 
     <div class="admin-toggle-row" style="display:none;margin-bottom:0.8rem;">
@@ -2243,6 +2245,7 @@ document.getElementById('vidModal').addEventListener('click', e=>{ if(e.target==
    TALK COLLECTION + STORAGE
 ══════════════════════════════ */
 let activeLogTag = null;
+let activeLogMonth = null;
 let USER_LOGS = [];
 
 function getAllLogTags(){
@@ -2281,16 +2284,37 @@ function allLogs(){
 }
 function getAllLogTags(){ return [...new Set(allLogs().flatMap(e=>e.tags))]; }
 
+function renderLogMonthSelect(){
+  const sel = document.getElementById('logMonthFilter'); if(!sel) return;
+  const logs = allLogs();
+  const toYM = d => {
+    const m2 = d.match(/(\d{4})年(\d{1,2})月/);
+    if(m2) return `${m2[1]}年${parseInt(m2[2])}月`;
+    const m1 = d.match(/(\d{4})年/);
+    return m1 ? m1[1]+'年' : '';
+  };
+  const months = [...new Set(logs.map(e=>toYM(e.spokenDate||'')).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+  sel.innerHTML = '<option value="">📅 すべての年月</option>' + months.map(m=>`<option value="${m}"${activeLogMonth===m?' selected':''}>${m}</option>`).join('');
+  sel.onchange = ()=>{ activeLogMonth = sel.value||null; renderLogTags(); renderLogList(); };
+}
+
 let logTagExpanded = false;
 
 function renderLogTags(){
+  renderLogMonthSelect();
   const q = (document.getElementById('logTagSearch')?.value||'').toLowerCase();
   const row = document.getElementById('logTagRow');
-  // 現在の絞り込み条件に合致する発言のみ対象（タグ以外）
   const searchQ = (document.getElementById('logSearch')?.value||'').toLowerCase();
+  const toYM = d => {
+    const m2 = d.match(/(\d{4})年(\d{1,2})月/);
+    if(m2) return `${m2[1]}年${parseInt(m2[2])}月`;
+    const m1 = d.match(/(\d{4})年/);
+    return m1 ? m1[1]+'年' : '';
+  };
   const baseLogs = allLogs().filter(e=>{
-    if(!searchQ) return true;
-    return (e.quote||'').toLowerCase().includes(searchQ);
+    if(searchQ && !(e.quote||'').toLowerCase().includes(searchQ)) return false;
+    if(activeLogMonth && toYM(e.spokenDate||'') !== activeLogMonth) return false;
+    return true;
   });
   // 使用頻度→50音順でソート
   const tagCounts = {};
@@ -2319,7 +2343,17 @@ function renderLogTags(){
 function renderLogList(){
   const el = document.getElementById('logList');
   const all = allLogs();
-  const list = activeLogTag ? all.filter(e=>e.tags.includes(activeLogTag)) : all;
+  const toYM = d => {
+    const m2 = (d||'').match(/(\d{4})年(\d{1,2})月/);
+    if(m2) return `${m2[1]}年${parseInt(m2[2])}月`;
+    const m1 = (d||'').match(/(\d{4})年/);
+    return m1 ? m1[1]+'年' : '';
+  };
+  const list = all.filter(e=>{
+    if(activeLogTag && !e.tags.includes(activeLogTag)) return false;
+    if(activeLogMonth && toYM(e.spokenDate||'') !== activeLogMonth) return false;
+    return true;
+  });
   if(!list.length){
     el.innerHTML=`<p style="text-align:center;padding:2.5rem 0;font-size:0.82rem;font-weight:700;color:#aaa;">まだ発言集がありません。最初に投稿してみましょう！</p>`;
     return;
