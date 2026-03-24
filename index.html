@@ -1237,8 +1237,7 @@ async function sbDelete(table, id){
     <div style="margin-bottom:0.5rem;">
       <input id="logTagSearch" type="text" placeholder="🏷 タグを絞り込む…" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.8rem;border-radius:20px;border:2px solid var(--ink);width:100%;box-sizing:border-box;max-width:280px;">
     </div>
-    <div style="margin-bottom:0.5rem;"><select id="logMonthFilter" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:20px;border:2px solid var(--ink);background:var(--white);cursor:pointer;"></select></div>
-    </div>
+    <div style="margin-bottom:0.5rem;"><select id="logMonthFilter" style="font-size:0.75rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:20px;border:2px solid var(--ink);background:var(--white);cursor:pointer;max-width:200px;"></select></div>
     <div class="log-tag-row" id="logTagRow"></div>
 
     <div class="admin-toggle-row" style="display:none;margin-bottom:0.8rem;">
@@ -2288,6 +2287,11 @@ function renderLogMonthSelect(){
   const sel = document.getElementById('logMonthFilter'); if(!sel) return;
   const logs = allLogs();
   const toYM = d => {
+    if(!d) return '';
+    // 2026/3/22 or 2026/3 形式
+    const s = d.match(/^(\d{4})\/(\d{1,2})/);
+    if(s) return `${s[1]}年${parseInt(s[2])}月`;
+    // 2026年3月 形式
     const m2 = d.match(/(\d{4})年(\d{1,2})月/);
     if(m2) return `${m2[1]}年${parseInt(m2[2])}月`;
     const m1 = d.match(/(\d{4})年/);
@@ -2306,6 +2310,9 @@ function renderLogTags(){
   const row = document.getElementById('logTagRow');
   const searchQ = (document.getElementById('logSearch')?.value||'').toLowerCase();
   const toYM = d => {
+    if(!d) return '';
+    const s = d.match(/^(\d{4})\/(\d{1,2})/);
+    if(s) return `${s[1]}年${parseInt(s[2])}月`;
     const m2 = d.match(/(\d{4})年(\d{1,2})月/);
     if(m2) return `${m2[1]}年${parseInt(m2[2])}月`;
     const m1 = d.match(/(\d{4})年/);
@@ -2344,6 +2351,9 @@ function renderLogList(){
   const el = document.getElementById('logList');
   const all = allLogs();
   const toYM = d => {
+    if(!d) return '';
+    const s = d.match(/^(\d{4})\/(\d{1,2})/);
+    if(s) return `${s[1]}年${parseInt(s[2])}月`;
     const m2 = (d||'').match(/(\d{4})年(\d{1,2})月/);
     if(m2) return `${m2[1]}年${parseInt(m2[2])}月`;
     const m1 = (d||'').match(/(\d{4})年/);
