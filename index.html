@@ -1610,7 +1610,13 @@ let vidTagExpanded = false;
 
 function renderVidMonthSelect(){
   const sel = document.getElementById('vidMonthFilter');
-  const months = [...new Set(VIDEOS.map(v=>vidYearMonth(v.date)).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+  const months = [...new Set(VIDEOS.map(v=>vidYearMonth(v.date)).filter(Boolean))].sort((a,b)=>{
+    const pa = a.match(/(\d{4})年(?:(\d{1,2})月)?/);
+    const pb = b.match(/(\d{4})年(?:(\d{1,2})月)?/);
+    const ya = pa ? parseInt(pa[1]) : 0, ma = pa&&pa[2] ? parseInt(pa[2]) : 0;
+    const yb = pb ? parseInt(pb[1]) : 0, mb = pb&&pb[2] ? parseInt(pb[2]) : 0;
+    return yb!==ya ? yb-ya : mb-ma;
+  });
   sel.innerHTML = '<option value="">📅 すべての月</option>' + months.map(m=>`<option value="${m}"${activeVidMonth===m?' selected':''}>${m}</option>`).join('');
   sel.onchange = ()=>{ activeVidMonth = sel.value||null; vidPage=0; renderVidTags(); renderVidGrid(); };
 }
@@ -2297,7 +2303,13 @@ function renderLogMonthSelect(){
     const m1 = d.match(/(\d{4})年/);
     return m1 ? m1[1]+'年' : '';
   };
-  const months = [...new Set(logs.map(e=>toYM(e.spokenDate||'')).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+  const months = [...new Set(logs.map(e=>toYM(e.spokenDate||'')).filter(Boolean))].sort((a,b)=>{
+    const pa = a.match(/(\d{4})年(?:(\d{1,2})月)?/);
+    const pb = b.match(/(\d{4})年(?:(\d{1,2})月)?/);
+    const ya = pa ? parseInt(pa[1]) : 0, ma = pa&&pa[2] ? parseInt(pa[2]) : 0;
+    const yb = pb ? parseInt(pb[1]) : 0, mb = pb&&pb[2] ? parseInt(pb[2]) : 0;
+    return yb!==ya ? yb-ya : mb-ma;
+  });
   sel.innerHTML = '<option value="">📅 すべての年月</option>' + months.map(m=>`<option value="${m}"${activeLogMonth===m?' selected':''}>${m}</option>`).join('');
   sel.onchange = ()=>{ activeLogMonth = sel.value||null; renderLogTags(); renderLogList(); };
 }
