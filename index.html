@@ -2602,6 +2602,8 @@ function renderLogList(){
           reason,
         });
         showToast('編集申請を送信しました。管理人が確認後に反映されます。');
+        renderLogTags(); renderLogList();
+        renderVidTags(); renderVidGrid();
       }
       form.classList.remove('open');
       el.querySelectorAll('.log-edit-btn').forEach(eb=>eb.textContent='✎');
@@ -2827,6 +2829,20 @@ document.getElementById('logTagSearch').addEventListener('input', ()=>{ logTagEx
 (()=>{
   const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
   let pos = 0;
+  // スマホ用：フッターを3秒長押しで管理人モード解放
+  let _adminLongPress = null;
+  const _footerEl = document.querySelector('footer');
+  if(_footerEl){
+    _footerEl.addEventListener('touchstart', ()=>{
+      _adminLongPress = setTimeout(()=>{
+        document.getElementById('adminToggleBtn').closest('.admin-toggle-row').style.display='flex';
+        document.getElementById('logAdminToggleBtn').closest('.admin-toggle-row').style.display='flex';
+        showToast('🔑 管理人モード解放');
+      }, 3000);
+    });
+    _footerEl.addEventListener('touchend', ()=>{ clearTimeout(_adminLongPress); });
+    _footerEl.addEventListener('touchmove', ()=>{ clearTimeout(_adminLongPress); });
+  }
   document.addEventListener('keydown', e=>{
     if(e.key === KONAMI[pos]) {
       pos++;
