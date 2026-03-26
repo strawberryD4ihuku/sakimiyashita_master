@@ -1771,6 +1771,7 @@ function renderVidGrid(){
           field_changes: changes, reason,
         });
         showToast('編集申請を送信しました。管理人が確認後に反映されます。');
+        renderVidTags(); renderVidGrid();
       }
       form.classList.remove('open');
       const editBtn = grid.querySelector(`.edit-btn[data-id="${b.dataset.id}"]`);
