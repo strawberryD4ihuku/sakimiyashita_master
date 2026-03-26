@@ -1141,6 +1141,10 @@ async function sbDelete(table, id){
           <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">🎬 動画を直接削除</div>
           <div id="adminDirectVidList"></div>
         </div>
+        <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">✏️ 編集申請（動画）</div>
+          <div id="adminEditVidList"></div>
+        </div>
       </div>
     </div>
 
@@ -1264,6 +1268,10 @@ async function sbDelete(table, id){
         <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(122,68,187,0.2);">
           <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">💬 発言を直接削除</div>
           <div id="logAdminDirectList"></div>
+        </div>
+        <div style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid rgba(122,68,187,0.2);">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.6rem;">✏️ 編集申請（発言集）</div>
+          <div id="logAdminEditList"></div>
         </div>
       </div>
     </div>
@@ -1698,8 +1706,10 @@ function renderVidGrid(){
         <input class="ef-date" type="date" value="${h(v.date||'')}">
         <label>メモ</label>
         <input class="ef-desc" value="${h(v.desc)}">
+        <label>修正理由（任意）</label>
+        <input class="ef-reason" type="text" placeholder="例: タグを追加したい">
         <div class="ef-btns">
-          <button class="ef-save" data-id="${v.id}">保存</button>
+          <button class="ef-save" data-id="${v.id}">編集を申請する</button>
           <button class="ef-cancel" data-id="${v.id}">キャンセル</button>
         </div>
       </div>
@@ -1734,18 +1744,30 @@ function renderVidGrid(){
     });
   });
 
-  // 編集保存
+  // 編集申請
   grid.querySelectorAll('.ef-save').forEach(b=>{
     b.addEventListener('click', async e=>{
       e.stopPropagation();
       const v = VIDEOS.find(x=>x.id===b.dataset.id); if(!v) return;
       const form = document.getElementById('ef-'+b.dataset.id);
-      v.title = form.querySelector('.ef-title').value.trim() || v.title;
-      v.tags  = form.querySelector('.ef-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
-      v.date  = form.querySelector('.ef-date').value || v.date;
-      v.desc  = form.querySelector('.ef-desc').value.trim();
-      await sbUpdate('user_videos', b.dataset.id, { title:v.title, tags:v.tags, date:v.date, description:v.desc });
-      renderVidTags(); renderVidGrid();
+      const changes = {
+        title: form.querySelector('.ef-title').value.trim() || v.title,
+        tags:  form.querySelector('.ef-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+        date:  form.querySelector('.ef-date').value || v.date,
+        desc:  form.querySelector('.ef-desc').value.trim(),
+      };
+      const reason = form.querySelector('.ef-reason')?.value.trim() || '';
+      await sbInsert('edit_requests', {
+        section: 'video',
+        entry_id: v.id,
+        entry_title: v.title.slice(0,80),
+        field_changes: changes,
+        reason,
+      });
+      showToast('編集申請を送信しました。管理人が確認後に反映されます。');
+      form.classList.remove('open');
+      const editBtn = grid.querySelector(`.edit-btn[data-id="${b.dataset.id}"]`);
+      if(editBtn) editBtn.textContent='✎ 編集';
     });
   });
 
@@ -1812,6 +1834,13 @@ document.getElementById('fetchBtn').addEventListener('click', async()=>{
 
 document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   if(!pendingVid) return;
+  // レート制限チェック
+  const _nowVid = Date.now();
+  if(_nowVid - _lastVidAdd < VID_RATE_MS){
+    const _waitV = Math.ceil((VID_RATE_MS - (_nowVid - _lastVidAdd)) / 1000);
+    const err=document.getElementById('addErr');
+    err.textContent=`⚠ 動画追加は1分に1件までです。あと${_waitV}秒お待ちください。`; err.style.display='block'; return;
+  }
   // 重複チェック
   if(VIDEOS.some(v=>v.youtubeId===pendingVid)){
     const err=document.getElementById('addErr');
@@ -1832,6 +1861,7 @@ document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   const date  = rawDate || new Date().toISOString().slice(0,10);
   const id    = 'v' + Date.now();
   const newVid = { id, youtubeId:pendingVid, title, date, tags, desc };
+  _lastVidAdd = Date.now();
   VIDEOS.unshift(newVid);
   await sbInsert('user_videos', { id, youtube_id:pendingVid, title, date, tags, description:desc });
   document.getElementById('addPreview').style.display='none';
@@ -1961,11 +1991,79 @@ async function loadUserVideos(){
 let reportTargetId = null;
 let adminUnlocked = false;
 let DELETE_REPORTS = [];
+let EDIT_REQUESTS = [];
 
 async function loadReports(){
   DELETE_REPORTS = await sbGetAll('delete_reports');
+  EDIT_REQUESTS  = await sbGetAll('edit_requests');
 }
 async function saveReports(){ /* Supabase版では個別操作のため不使用 */ }
+
+function renderAdminEditRequests(section){
+  const listId = section==='video' ? 'adminEditVidList' : 'logAdminEditList';
+  const list = document.getElementById(listId); if(!list) return;
+  const pending = EDIT_REQUESTS.filter(r=>r.section===section && r.status==='pending');
+  if(!pending.length){ list.innerHTML='<div class="admin-empty">編集申請はありません ✨</div>'; return; }
+  list.innerHTML = pending.map(r=>{
+    const changes = r.field_changes||{};
+    const changesHtml = Object.entries(changes).filter(([,v])=>v!==null&&v!=='').map(([k,v])=>
+      `<div style="font-size:0.68rem;color:rgba(255,255,255,0.7);">${h(k)}: <span style="color:var(--white);">${h(Array.isArray(v)?v.join(', '):String(v))}</span></div>`
+    ).join('');
+    return `<div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:0.7rem;margin-bottom:0.6rem;">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--yellow);margin-bottom:0.3rem;">「${h((r.entry_title||'').slice(0,30))}」</div>
+      ${changesHtml}
+      ${r.reason ? `<div style="font-size:0.68rem;color:var(--sky);margin-top:0.3rem;">理由: ${h(r.reason)}</div>` : ''}
+      <div style="display:flex;gap:0.4rem;margin-top:0.5rem;">
+        <button class="edit-approve-btn" data-rid="${h(r.id)}" data-section="${h(section)}" style="font-size:0.62rem;padding:0.15rem 0.5rem;background:var(--mint);color:var(--ink);border:none;border-radius:6px;cursor:pointer;">✓ 承認</button>
+        <button class="edit-dismiss-btn" data-rid="${h(r.id)}" style="font-size:0.62rem;padding:0.15rem 0.5rem;background:rgba(255,255,255,0.15);color:var(--white);border:none;border-radius:6px;cursor:pointer;">✕ 却下</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.edit-approve-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      const req = EDIT_REQUESTS.find(r=>r.id===b.dataset.rid); if(!req) return;
+      const ch = req.field_changes||{};
+      if(req.section==='video'){
+        const v = VIDEOS.find(x=>x.id===req.entry_id);
+        if(v){
+          if(ch.title) v.title = ch.title;
+          if(ch.tags)  v.tags  = ch.tags;
+          if(ch.date)  v.date  = ch.date;
+          if(ch.desc)  v.desc  = ch.desc;
+          await sbUpdate('user_videos', v.id, { title:v.title, tags:v.tags, date:v.date, description:v.desc });
+          renderVidTags(); renderVidGrid(); renderAdminDirectVids();
+        }
+      } else {
+        const entry = USER_LOGS.find(x=>x.id===req.entry_id);
+        if(entry){
+          if(ch.quote)       entry.quote       = ch.quote;
+          if(ch.episode)     entry.episode     = ch.episode;
+          if(ch.tags)        entry.tags        = ch.tags;
+          if(ch.spoken_date) entry.spoken_date = ch.spoken_date;
+          if(ch.youtube_url !== undefined) entry.youtube_url = ch.youtube_url;
+          await sbUpdate('user_logs', entry.id, {
+            quote: entry.quote, episode: entry.episode, tags: entry.tags,
+            spoken_date: entry.spoken_date, youtube_url: entry.youtube_url
+          });
+          renderLogTags(); renderLogList();
+        }
+      }
+      await sbUpdate('edit_requests', req.id, {status:'approved'});
+      await loadReports();
+      renderAdminEditRequests(section);
+      showToast('編集を承認しました');
+    });
+  });
+  list.querySelectorAll('.edit-dismiss-btn').forEach(b=>{
+    b.addEventListener('click', async()=>{
+      await sbUpdate('edit_requests', b.dataset.rid, {status:'dismissed'});
+      await loadReports();
+      renderAdminEditRequests(section);
+      showToast('申請を却下しました');
+    });
+  });
+}
 
 function openReportModal(vidId){
   const v = VIDEOS.find(x=>x.id===vidId); if(!v) return;
@@ -2002,7 +2100,7 @@ document.getElementById('reportSubmitBtn').addEventListener('click', async()=>{
 document.getElementById('adminToggleBtn').addEventListener('click',()=>{
   const panel = document.getElementById('adminPanel');
   panel.classList.toggle('open');
-  if(panel.classList.contains('open') && adminUnlocked){ renderAdminReports(); renderTagAdminReports('vid'); renderAdminDirectVids(); }
+  if(panel.classList.contains('open') && adminUnlocked){ renderAdminReports(); renderTagAdminReports('vid'); renderAdminDirectVids(); renderAdminEditRequests('video'); }
 });
 document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
   const email = document.getElementById('adminEmail').value.trim();
@@ -2013,7 +2111,7 @@ document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
     document.getElementById('adminLoginArea').style.display='none';
     document.getElementById('adminContent').style.display='block';
     document.getElementById('adminPwErr').style.display='none';
-    await loadReports(); await loadTagReports(); renderAdminReports(); renderTagAdminReports('vid'); renderAdminDirectVids();
+    await loadReports(); await loadTagReports(); renderAdminReports(); renderTagAdminReports('vid'); renderAdminDirectVids(); renderAdminEditRequests('video');
   } else {
     document.getElementById('adminPwErr').style.display='inline';
     document.getElementById('adminPw').value='';
@@ -2408,8 +2506,10 @@ function renderLogList(){
           <input class="lef-tags" value="${h((e.tags||[]).join(', '))}">
           <div class="lef-tag-suggest" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem;"></div>
           <input class="lef-src" value="${h(e.src)}" style="display:none;">
+          <label>修正理由（任意）</label>
+          <input class="lef-reason" type="text" placeholder="例: 誤字を修正したい">
           <div class="lef-btns">
-            <button class="lef-save" data-id="${e.id||''}" data-official="${e.isOfficial?'1':'0'}">保存</button>
+            <button class="lef-save" data-id="${e.id||''}" data-official="${e.isOfficial?'1':'0'}">編集を申請する</button>
             <button class="lef-cancel" data-id="${e.id||''}">キャンセル</button>
           </div>
         </div>
@@ -2455,48 +2555,32 @@ function renderLogList(){
     });
   });
 
-  // 編集保存
+  // 編集申請
   el.querySelectorAll('.lef-save').forEach(b=>{
     b.addEventListener('click', async e=>{
       e.stopPropagation();
       const form = document.getElementById('lef-'+b.dataset.id); if(!form) return;
-      const newQuote   = form.querySelector('.lef-quote').value.trim();
-      const newEpisode = form.querySelector('.lef-episode').value.trim();
-      const newTags    = form.querySelector('.lef-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
-      const newSrc     = form.querySelector('.lef-src').value.trim();
+      const newQuote      = form.querySelector('.lef-quote').value.trim();
+      const newEpisode    = form.querySelector('.lef-episode').value.trim();
+      const newTags       = form.querySelector('.lef-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
       const newSpokenDate = form.querySelector('.lef-spoken-date')?.value.trim() || null;
       const newVideoUrl   = form.querySelector('.lef-video-url')?.value.trim() || null;
-      // URLバリデーション
+      const reason        = form.querySelector('.lef-reason')?.value.trim() || '';
       if(newVideoUrl && !newVideoUrl.match(/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//)){
         alert('⚠ 動画URLはYouTubeのURLのみ入力できます。'); return;
       }
-      if(b.dataset.official==='1'){
-        // 公式エントリーはLOG_ENTRIES配列を直接更新（ページ内メモリのみ）
-        const idx = LOG_ENTRIES.findIndex((_,i)=>LOG_ENTRIES[i]===LOG_ENTRIES.find(x=>
-          (x.id||('o'+i))===b.dataset.id
-        ));
-        // idで探してなければインデックスベースで
-        const entry = LOG_ENTRIES.find(x=>(x.id||'')===b.dataset.id);
-        if(entry){
-          if(newQuote) entry.quote = newQuote;
-          entry.episode = newEpisode; entry.tags = newTags; entry.src = newSrc;
-          entry.spokenDate = newSpokenDate;
-        }
-      } else {
-        const entry = USER_LOGS.find(x=>x.id===b.dataset.id);
-        if(entry){
-          if(newQuote) entry.quote = newQuote;
-          entry.episode = newEpisode; entry.tags = newTags; entry.src = newSrc;
-          entry.spoken_date = newSpokenDate;
-          entry.youtube_url = newVideoUrl;
-          await sbUpdate('user_logs', entry.id, {
-            quote: entry.quote, episode: entry.episode,
-            tags: entry.tags, src: entry.src,
-            spoken_date: newSpokenDate, youtube_url: newVideoUrl
-          });
-        }
-      }
-      renderLogTags(); renderLogList();
+      const all2 = allLogs();
+      const entry = all2.find(x=>String(x.id)===b.dataset.id);
+      await sbInsert('edit_requests', {
+        section: 'log',
+        entry_id: b.dataset.id,
+        entry_title: (entry?.quote||'').slice(0,40),
+        field_changes: { quote: newQuote, episode: newEpisode, tags: newTags, spoken_date: newSpokenDate, youtube_url: newVideoUrl },
+        reason,
+      });
+      showToast('編集申請を送信しました。管理人が確認後に反映されます。');
+      form.classList.remove('open');
+      el.querySelectorAll('.log-edit-btn').forEach(eb=>eb.textContent='✎');
     });
   });
 
@@ -2518,6 +2602,10 @@ function renderLogList(){
 }
 
 let _subBtnBusy = false;
+let _lastLogPost = 0;
+const LOG_RATE_MS = 60 * 1000; // 1分
+let _lastVidAdd = 0;
+const VID_RATE_MS = 60 * 1000; // 1分
 document.getElementById('subBtn').addEventListener('click', async()=>{
   if(_subBtnBusy) return;
   _subBtnBusy = true;
@@ -2533,6 +2621,13 @@ document.getElementById('subBtn').addEventListener('click', async()=>{
   const sD = document.getElementById('subDay').value;
   const spokenDate = sY ? `${sY}${sM?`年${sM}月`:'年'}${sD&&sM?`${sD}日`:''}` : null;
 
+  // レート制限チェック
+  const _nowLog = Date.now();
+  if(_nowLog - _lastLogPost < LOG_RATE_MS){
+    const _wait = Math.ceil((LOG_RATE_MS - (_nowLog - _lastLogPost)) / 1000);
+    msg.textContent=`⚠ 投稿は1分に1件までです。あと${_wait}秒お待ちください。`; msg.style.color='var(--pink)'; msg.style.display='inline';
+    btn.disabled=false; btn.textContent='投稿する'; _subBtnBusy=false; return;
+  }
   if(!quote){
     msg.textContent='⚠ 発言内容を入力してください。'; msg.style.color='var(--pink)'; msg.style.display='inline';
     btn.disabled=false; btn.textContent='投稿する'; _subBtnBusy=false; return;
@@ -2562,6 +2657,7 @@ document.getElementById('subBtn').addEventListener('click', async()=>{
   await loadUserLogs();
   ['subQuote','subEpisode','subTags','subVideo'].forEach(id=>document.getElementById(id).value='');
   ['subYear','subMonth','subDay'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  _lastLogPost = Date.now();
   msg.textContent='✓ 投稿しました！ありがとうございます。'; msg.style.color='var(--mint)'; msg.style.display='inline';
   setTimeout(()=>msg.style.display='none', 3500);
   renderLogTags(); renderLogList();
@@ -2615,7 +2711,7 @@ document.getElementById('logReportSubmitBtn').addEventListener('click', async()=
 document.getElementById('logAdminToggleBtn').addEventListener('click',()=>{
   const panel = document.getElementById('logAdminPanel');
   panel.classList.toggle('open');
-  if(panel.classList.contains('open') && logAdminUnlocked){ renderLogAdminReports(); renderTagAdminReports('log'); renderLogAdminDirect(); }
+  if(panel.classList.contains('open') && logAdminUnlocked){ renderLogAdminReports(); renderTagAdminReports('log'); renderLogAdminDirect(); renderAdminEditRequests('log'); }
 });
 document.getElementById('logAdminLoginBtn').addEventListener('click', async()=>{
   const email = document.getElementById('logAdminEmail').value.trim();
@@ -2626,7 +2722,7 @@ document.getElementById('logAdminLoginBtn').addEventListener('click', async()=>{
     document.getElementById('logAdminLoginArea').style.display='none';
     document.getElementById('logAdminContent').style.display='block';
     document.getElementById('logAdminPwErr').style.display='none';
-    await loadLogReports(); await loadTagReports(); renderLogAdminReports(); renderTagAdminReports('log'); renderLogAdminDirect();
+    await loadLogReports(); await loadTagReports(); renderLogAdminReports(); renderTagAdminReports('log'); renderLogAdminDirect(); renderAdminEditRequests('log');
   } else {
     document.getElementById('logAdminPwErr').style.display='inline';
     document.getElementById('logAdminPw').value='';
