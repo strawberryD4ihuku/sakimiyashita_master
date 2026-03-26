@@ -1709,7 +1709,7 @@ function renderVidGrid(){
         <label>修正理由（任意）</label>
         <input class="ef-reason" type="text" placeholder="例: タグを追加したい">
         <div class="ef-btns">
-          <button class="ef-save" data-id="${v.id}">編集を申請する</button>
+          <button class="ef-save" data-id="${v.id}">${adminUnlocked ? '保存' : '編集を申請する'}</button>
           <button class="ef-cancel" data-id="${v.id}">キャンセル</button>
         </div>
       </div>
@@ -1744,7 +1744,7 @@ function renderVidGrid(){
     });
   });
 
-  // 編集申請
+  // 編集申請 or 直接保存（管理人）
   grid.querySelectorAll('.ef-save').forEach(b=>{
     b.addEventListener('click', async e=>{
       e.stopPropagation();
@@ -1757,14 +1757,21 @@ function renderVidGrid(){
         desc:  form.querySelector('.ef-desc').value.trim(),
       };
       const reason = form.querySelector('.ef-reason')?.value.trim() || '';
-      await sbInsert('edit_requests', {
-        section: 'video',
-        entry_id: v.id,
-        entry_title: v.title.slice(0,80),
-        field_changes: changes,
-        reason,
-      });
-      showToast('編集申請を送信しました。管理人が確認後に反映されます。');
+      if(adminUnlocked){
+        // 管理人：直接保存
+        v.title = changes.title; v.tags = changes.tags; v.date = changes.date; v.desc = changes.desc;
+        await sbUpdate('user_videos', v.id, { title:v.title, tags:v.tags, date:v.date, description:v.desc });
+        showToast('保存しました');
+        renderVidTags(); renderVidGrid();
+      } else {
+        // 一般ユーザー：申請
+        await sbInsert('edit_requests', {
+          section: 'video', entry_id: v.id,
+          entry_title: v.title.slice(0,80),
+          field_changes: changes, reason,
+        });
+        showToast('編集申請を送信しました。管理人が確認後に反映されます。');
+      }
       form.classList.remove('open');
       const editBtn = grid.querySelector(`.edit-btn[data-id="${b.dataset.id}"]`);
       if(editBtn) editBtn.textContent='✎ 編集';
@@ -2509,7 +2516,7 @@ function renderLogList(){
           <label>修正理由（任意）</label>
           <input class="lef-reason" type="text" placeholder="例: 誤字を修正したい">
           <div class="lef-btns">
-            <button class="lef-save" data-id="${e.id||''}" data-official="${e.isOfficial?'1':'0'}">編集を申請する</button>
+            <button class="lef-save" data-id="${e.id||''}" data-official="${e.isOfficial?'1':'0'}">${logAdminUnlocked ? '保存' : '編集を申請する'}</button>
             <button class="lef-cancel" data-id="${e.id||''}">キャンセル</button>
           </div>
         </div>
@@ -2555,7 +2562,7 @@ function renderLogList(){
     });
   });
 
-  // 編集申請
+  // 編集申請 or 直接保存（管理人）
   el.querySelectorAll('.lef-save').forEach(b=>{
     b.addEventListener('click', async e=>{
       e.stopPropagation();
@@ -2569,16 +2576,32 @@ function renderLogList(){
       if(newVideoUrl && !newVideoUrl.match(/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//)){
         alert('⚠ 動画URLはYouTubeのURLのみ入力できます。'); return;
       }
-      const all2 = allLogs();
-      const entry = all2.find(x=>String(x.id)===b.dataset.id);
-      await sbInsert('edit_requests', {
-        section: 'log',
-        entry_id: b.dataset.id,
-        entry_title: (entry?.quote||'').slice(0,40),
-        field_changes: { quote: newQuote, episode: newEpisode, tags: newTags, spoken_date: newSpokenDate, youtube_url: newVideoUrl },
-        reason,
-      });
-      showToast('編集申請を送信しました。管理人が確認後に反映されます。');
+      if(logAdminUnlocked){
+        // 管理人：直接保存
+        const entry = USER_LOGS.find(x=>x.id===b.dataset.id);
+        if(entry){
+          if(newQuote) entry.quote = newQuote;
+          entry.episode = newEpisode; entry.tags = newTags;
+          entry.spoken_date = newSpokenDate; entry.youtube_url = newVideoUrl;
+          await sbUpdate('user_logs', entry.id, {
+            quote: entry.quote, episode: entry.episode, tags: entry.tags,
+            spoken_date: newSpokenDate, youtube_url: newVideoUrl
+          });
+        }
+        showToast('保存しました');
+        renderLogTags(); renderLogList();
+      } else {
+        // 一般ユーザー：申請
+        const all2 = allLogs();
+        const entry = all2.find(x=>String(x.id)===b.dataset.id);
+        await sbInsert('edit_requests', {
+          section: 'log', entry_id: b.dataset.id,
+          entry_title: (entry?.quote||'').slice(0,40),
+          field_changes: { quote: newQuote, episode: newEpisode, tags: newTags, spoken_date: newSpokenDate, youtube_url: newVideoUrl },
+          reason,
+        });
+        showToast('編集申請を送信しました。管理人が確認後に反映されます。');
+      }
       form.classList.remove('open');
       el.querySelectorAll('.log-edit-btn').forEach(eb=>eb.textContent='✎');
     });
