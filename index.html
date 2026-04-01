@@ -1351,6 +1351,7 @@ function navTo(id){
 const WORKS = [
   { title:"貴族転生 ～恵まれた生まれから最強の力を得る～",                    role:"ゾーイ",              type:"anime", year:"2026" },
   { title:"鎧真伝サムライトルーパー",                                           role:"子供",               type:"anime", year:"2026" },
+  { title:"Link!Like!ラブライブ!",                                              role:"襟川つぐみ",         type:"game",  year:"2025" },
   { title:"魔女ガミ－The Witch of Luludidea－",                                 role:"カルマ",             type:"game",  year:"2025" },
   { title:"スターセイヴァー",                                                   role:"エピンデル",         type:"game",  year:"2025" },
   { title:"サラリーマンが異世界に行ったら四天王になった話",                     role:"キャットシーB",      type:"anime", year:"2025" },
@@ -1757,6 +1758,12 @@ function renderVidGrid(){
         desc:  form.querySelector('.ef-desc').value.trim(),
       };
       const reason = form.querySelector('.ef-reason')?.value.trim() || '';
+      // 変更チェック
+      const hasVidChanges = changes.title !== v.title ||
+        JSON.stringify(changes.tags) !== JSON.stringify(v.tags) ||
+        changes.date !== (v.date||'') ||
+        changes.desc !== (v.desc||'');
+      if(!adminUnlocked && !hasVidChanges){ showToast('⚠ 変更がありません'); return; }
       if(adminUnlocked){
         // 管理人：直接保存
         v.title = changes.title; v.tags = changes.tags; v.date = changes.date; v.desc = changes.desc;
@@ -2577,6 +2584,17 @@ function renderLogList(){
       if(newVideoUrl && !newVideoUrl.match(/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//)){
         alert('⚠ 動画URLはYouTubeのURLのみ入力できます。'); return;
       }
+      // 変更チェック
+      const all3 = allLogs();
+      const origEntry = all3.find(x=>String(x.id)===b.dataset.id);
+      const hasLogChanges = origEntry && (
+        (newQuote && newQuote !== origEntry.quote) ||
+        (newEpisode !== (origEntry.episode||'')) ||
+        JSON.stringify(newTags) !== JSON.stringify(origEntry.tags||[]) ||
+        (newSpokenDate !== (origEntry.spokenDate||origEntry.spoken_date||null)) ||
+        (newVideoUrl !== (origEntry.youtubeUrl||origEntry.youtube_url||null))
+      );
+      if(!logAdminUnlocked && !hasLogChanges){ showToast('⚠ 変更がありません'); return; }
       if(logAdminUnlocked){
         // 管理人：直接保存
         const entry = USER_LOGS.find(x=>x.id===b.dataset.id);
