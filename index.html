@@ -2062,6 +2062,7 @@ function renderAdminEditRequests(section){
             spoken_date: entry.spoken_date, youtube_url: entry.youtube_url
           });
           renderLogTags(); renderLogList();
+          renderVidTags(); renderVidGrid();
         }
       }
       await sbUpdate('edit_requests', req.id, {status:'approved'});
