@@ -1990,11 +1990,10 @@ async function loadUserVideos(){
   const { data, error } = await _sb.from('user_videos').select('*').order('date', { ascending: false });
   if(error){ console.error('user_videos', error.message); return; }
   const rows = data ?? [];
-  const htmlIds = new Set(VIDEOS.map(v=>v.id));
+  // 既存のSupabase由来の動画を一旦削除（HTMLのv*以外）して再構築
+  VIDEOS = VIDEOS.filter(v=>v.id.startsWith('v') && !rows.find(r=>r.id===v.id));
   rows.forEach(r=>{
-    if(!htmlIds.has(r.id)){
-      VIDEOS.push({ id:r.id, youtubeId:r.youtube_id, title:r.title, date:r.date, tags:r.tags||[], desc:r.description||'' });
-    }
+    VIDEOS.push({ id:r.id, youtubeId:r.youtube_id, title:r.title, date:r.date, tags:r.tags||[], desc:r.description||'' });
   });
   VIDEOS.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 }
@@ -2067,6 +2066,8 @@ function renderAdminEditRequests(section){
       }
       await sbUpdate('edit_requests', req.id, {status:'approved'});
       await loadReports();
+      await loadUserVideos();
+      renderVidTags(); renderVidGrid();
       renderAdminEditRequests(section);
       showToast('編集を承認しました');
     });
