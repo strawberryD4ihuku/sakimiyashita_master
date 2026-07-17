@@ -1851,17 +1851,39 @@ document.getElementById('fetchBtn').addEventListener('click', async()=>{
     const data = await res.json();
     document.getElementById('prevTitle').value = data.title||'';
   } catch(e){ document.getElementById('prevTitle').value=''; }
-  // 日付欄が空なら今日の日付（ローカル時刻基準）を自動入力
+  // 日付欄が空なら自動入力：APIキーがあれば実際の公開日、なければ今日の日付
   const dEl = document.getElementById('prevDate');
-  if(!dEl.value) dEl.value = todayLocalISO();
+  if(!dEl.value) dEl.value = (await fetchYtPublishDate(vid)) || todayLocalISO();
   document.getElementById('addPreview').style.display='block';
   renderTagSuggest(document.getElementById('prevTags'), document.getElementById('prevTagSuggest'));
 });
 
 /* ローカル時刻基準のYYYY-MM-DD（toISOStringはUTCのため深夜0時〜9時に日付がずれる） */
-function todayLocalISO(){
-  const n = new Date();
+function localISODate(n){
   return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+function todayLocalISO(){ return localISODate(new Date()); }
+
+/* ══════════════════════════════
+   YouTube Data API：動画の実際の公開日を取得
+   ▼ Google CloudでYouTube Data API v3のAPIキーを取得して下に貼ると、
+     動画登録時に「実際の公開日（配信は配信開始日）」が自動入力されます。
+     空のままなら今日の日付が入ります。
+══════════════════════════════ */
+let YT_API_KEY = '';
+
+async function fetchYtPublishDate(vid){
+  if(!YT_API_KEY) return null;
+  try{
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${vid}&key=${YT_API_KEY}`);
+    if(!res.ok){ console.error('youtube api', res.status); return null; }
+    const json = await res.json();
+    const item = json.items && json.items[0];
+    if(!item) return null;
+    // 生配信は配信開始日時、通常動画は公開日時
+    const iso = item.liveStreamingDetails?.actualStartTime || item.snippet?.publishedAt;
+    return iso ? localISODate(new Date(iso)) : null;
+  }catch(e){ console.error('youtube api', e); return null; }
 }
 
 document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
