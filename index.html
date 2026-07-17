@@ -930,6 +930,12 @@ footer a:hover { color: var(--white); }
 const SUPABASE_URL  = 'https://psnumniqlpnjbmvihsjj.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_BIM0u38weZLzqey11OaZIg_HKBrkC98';
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+/* 公開投稿専用クライアント：常に匿名(anon)として書き込む。
+   RLSのINSERTポリシーはanonロール向けのため、管理人ログイン中に
+   認証済みセッションで投稿するとRLS違反になるのを防ぐ */
+const _sbPublic = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-public-noauth' }
+});
 
 /* 汎用ラッパー：テーブルから全行取得 */
 async function sbGetAll(table){
@@ -937,9 +943,10 @@ async function sbGetAll(table){
   if(error){ console.error(table, error.message); return []; }
   return data ?? [];
 }
-/* 汎用ラッパー：1行挿入（失敗時はerrorを返す） */
+/* 汎用ラッパー：1行挿入（失敗時はerrorを返す）
+   投稿はすべて公開フォーム由来なので、ログイン状態に関係なく匿名クライアントで送る */
 async function sbInsert(table, row){
-  const { error } = await _sb.from(table).insert(row);
+  const { error } = await _sbPublic.from(table).insert(row);
   if(error) console.error(table, error.message);
   return error;
 }
