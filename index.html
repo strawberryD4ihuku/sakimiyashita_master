@@ -2132,11 +2132,8 @@ document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
   const pw    = document.getElementById('adminPw').value;
   const { data, error } = await _sb.auth.signInWithPassword({ email, password: pw });
   if(!error && data.session){
-    adminUnlocked = true;
-    document.getElementById('adminLoginArea').style.display='none';
-    document.getElementById('adminContent').style.display='block';
-    document.getElementById('adminPwErr').style.display='none';
-    await loadReports(); await loadTagReports(); renderAdminReports(); renderTagAdminReports('vid'); renderAdminDirectVids(); renderAdminEditRequests('video');
+    applyAdminUnlock();
+    await refreshAdminData();
   } else {
     document.getElementById('adminPwErr').style.display='inline';
     document.getElementById('adminPw').value='';
@@ -2145,12 +2142,7 @@ document.getElementById('adminLoginBtn').addEventListener('click', async()=>{
 document.getElementById('adminPw').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('adminLoginBtn').click(); });
 document.getElementById('adminLogoutBtn').addEventListener('click', async()=>{
   await _sb.auth.signOut();
-  adminUnlocked = false;
-  document.getElementById('adminLoginArea').style.display='flex';
-  document.getElementById('adminContent').style.display='none';
-  document.getElementById('adminPw').value='';
-  document.getElementById('adminEmail').value='';
-  document.getElementById('adminPanel').classList.remove('open');
+  applyAdminLock();
 });
 
 function renderAdminReports(){
@@ -2777,11 +2769,8 @@ document.getElementById('logAdminLoginBtn').addEventListener('click', async()=>{
   const pw    = document.getElementById('logAdminPw').value;
   const { data, error } = await _sb.auth.signInWithPassword({ email, password: pw });
   if(!error && data.session){
-    logAdminUnlocked = true;
-    document.getElementById('logAdminLoginArea').style.display='none';
-    document.getElementById('logAdminContent').style.display='block';
-    document.getElementById('logAdminPwErr').style.display='none';
-    await loadLogReports(); await loadTagReports(); renderLogAdminReports(); renderTagAdminReports('log'); renderLogAdminDirect(); renderAdminEditRequests('log');
+    applyAdminUnlock();
+    await refreshAdminData();
   } else {
     document.getElementById('logAdminPwErr').style.display='inline';
     document.getElementById('logAdminPw').value='';
@@ -2790,12 +2779,7 @@ document.getElementById('logAdminLoginBtn').addEventListener('click', async()=>{
 document.getElementById('logAdminPw').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('logAdminLoginBtn').click(); });
 document.getElementById('logAdminLogoutBtn').addEventListener('click', async()=>{
   await _sb.auth.signOut();
-  logAdminUnlocked = false;
-  document.getElementById('logAdminLoginArea').style.display='flex';
-  document.getElementById('logAdminContent').style.display='none';
-  document.getElementById('logAdminPw').value='';
-  document.getElementById('logAdminEmail').value='';
-  document.getElementById('logAdminPanel').classList.remove('open');
+  applyAdminLock();
 });
 
 function renderLogAdminReports(){
@@ -2855,6 +2839,52 @@ function renderLogAdminReports(){
   await loadUserLogs(); renderLogTags(); renderLogList(); renderLogTagSuggest(document.getElementById('subTags'), document.getElementById('subTagSuggest'));
 })();
 document.getElementById('logTagSearch').addEventListener('input', ()=>{ logTagExpanded=false; renderLogTags(); });
+
+/* ══════════════════════════════
+   管理人モード：両パネル一括解放/施錠 & セッション自動復元
+══════════════════════════════ */
+function applyAdminUnlock(){
+  adminUnlocked = true;
+  logAdminUnlocked = true;
+  document.querySelectorAll('.admin-toggle-row').forEach(r=>r.style.display='flex');
+  document.getElementById('adminLoginArea').style.display='none';
+  document.getElementById('adminContent').style.display='block';
+  document.getElementById('adminPwErr').style.display='none';
+  document.getElementById('logAdminLoginArea').style.display='none';
+  document.getElementById('logAdminContent').style.display='block';
+  document.getElementById('logAdminPwErr').style.display='none';
+}
+function applyAdminLock(){
+  adminUnlocked = false;
+  logAdminUnlocked = false;
+  document.getElementById('adminLoginArea').style.display='flex';
+  document.getElementById('adminContent').style.display='none';
+  document.getElementById('logAdminLoginArea').style.display='flex';
+  document.getElementById('logAdminContent').style.display='none';
+  ['adminPw','adminEmail','logAdminPw','logAdminEmail'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('adminPanel').classList.remove('open');
+  document.getElementById('logAdminPanel').classList.remove('open');
+  // カードの「保存」ボタンを「編集を申請する」表示に戻す
+  renderVidGrid(); renderLogList();
+}
+async function refreshAdminData(){
+  await loadReports(); await loadLogReports(); await loadTagReports();
+  renderAdminReports(); renderTagAdminReports('vid'); renderAdminDirectVids(); renderAdminEditRequests('video');
+  renderLogAdminReports(); renderTagAdminReports('log'); renderLogAdminDirect(); renderAdminEditRequests('log');
+  // カードの編集ボタンを管理人表示（直接保存）に切り替え
+  renderVidGrid(); renderLogList();
+}
+/* ログイン済みセッションが残っていれば自動で管理人モード復元 */
+(async()=>{
+  try{
+    const { data:{ session } } = await _sb.auth.getSession();
+    if(session){
+      applyAdminUnlock();
+      await refreshAdminData();
+      showToast('🔑 管理人モードでログイン中');
+    }
+  }catch(e){ console.error('session restore', e); }
+})();
 
 /* ══════════════════════════════
    KONAMI CODE → 管理人パネル解放
