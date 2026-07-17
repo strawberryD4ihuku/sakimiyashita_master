@@ -937,10 +937,11 @@ async function sbGetAll(table){
   if(error){ console.error(table, error.message); return []; }
   return data ?? [];
 }
-/* 汎用ラッパー：1行挿入 */
+/* 汎用ラッパー：1行挿入（失敗時はerrorを返す） */
 async function sbInsert(table, row){
   const { error } = await _sb.from(table).insert(row);
   if(error) console.error(table, error.message);
+  return error;
 }
 /* 汎用ラッパー：id指定で更新 */
 async function sbUpdate(table, id, values){
@@ -1876,9 +1877,16 @@ document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   const date  = rawDate || new Date().toISOString().slice(0,10);
   const id    = 'v' + Date.now();
   const newVid = { id, youtubeId:pendingVid, title, date, tags, desc };
+  // 先にSupabaseへ保存し、成功した場合のみ画面に反映する
+  const insErr = await sbInsert('user_videos', { id, youtube_id:pendingVid, title, date, tags, description:desc });
+  if(insErr){
+    const err=document.getElementById('addErr');
+    err.textContent=`⚠ 保存に失敗しました。通信環境を確認してもう一度お試しください。（${insErr.message}）`;
+    err.style.display='block'; return;
+  }
   _lastVidAdd = Date.now();
   VIDEOS.unshift(newVid);
-  await sbInsert('user_videos', { id, youtube_id:pendingVid, title, date, tags, description:desc });
+  document.getElementById('addErr').style.display='none';
   document.getElementById('addPreview').style.display='none';
   document.getElementById('addUrl').value='';
   document.getElementById('prevTitle').value='';
@@ -2699,7 +2707,12 @@ document.getElementById('subBtn').addEventListener('click', async()=>{
     const vid = extractYtId(vidUrl);
     if(vid){ const m=VIDEOS.find(v=>v.youtubeId===vid); if(m) row.video_id=m.id; }
   }
-  await sbInsert('user_logs', row);
+  // 保存に失敗したら入力内容を保持したままエラー表示して中断
+  const logInsErr = await sbInsert('user_logs', row);
+  if(logInsErr){
+    msg.textContent='⚠ 投稿の保存に失敗しました。通信環境を確認してもう一度お試しください。'; msg.style.color='var(--pink)'; msg.style.display='inline';
+    btn.disabled=false; btn.textContent='投稿する'; _subBtnBusy=false; return;
+  }
   await loadUserLogs();
   ['subQuote','subEpisode','subTags','subVideo'].forEach(id=>document.getElementById(id).value='');
   ['subYear','subMonth','subDay'].forEach(id=>document.getElementById(id).selectedIndex=0);
