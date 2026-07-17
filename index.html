@@ -1851,9 +1851,18 @@ document.getElementById('fetchBtn').addEventListener('click', async()=>{
     const data = await res.json();
     document.getElementById('prevTitle').value = data.title||'';
   } catch(e){ document.getElementById('prevTitle').value=''; }
+  // 日付欄が空なら今日の日付（ローカル時刻基準）を自動入力
+  const dEl = document.getElementById('prevDate');
+  if(!dEl.value) dEl.value = todayLocalISO();
   document.getElementById('addPreview').style.display='block';
   renderTagSuggest(document.getElementById('prevTags'), document.getElementById('prevTagSuggest'));
 });
+
+/* ローカル時刻基準のYYYY-MM-DD（toISOStringはUTCのため深夜0時〜9時に日付がずれる） */
+function todayLocalISO(){
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
 
 document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   if(!pendingVid) return;
@@ -1881,7 +1890,7 @@ document.getElementById('addConfirmBtn').addEventListener('click', async()=>{
   const tags = rawTags.split(',').map(t=>t.trim().slice(0,30)).filter(Boolean).slice(0,10);
   const title = rawTitle.slice(0,200) || '(タイトル未設定)';
   const desc  = rawDesc.slice(0,500);
-  const date  = rawDate || new Date().toISOString().slice(0,10);
+  const date  = rawDate || todayLocalISO();
   const id    = 'v' + Date.now();
   const newVid = { id, youtubeId:pendingVid, title, date, tags, desc };
   // 先にSupabaseへ保存し、成功した場合のみ画面に反映する
@@ -1908,6 +1917,7 @@ document.getElementById('addCancelBtn').addEventListener('click',()=>{
   document.getElementById('addPreview').style.display='none';
   document.getElementById('addErr').style.display='none';
   document.getElementById('addUrl').value='';
+  ['prevTitle','prevTags','prevDate','prevDesc'].forEach(id=>{ document.getElementById(id).value=''; });
   pendingVid=null;
 });
 
