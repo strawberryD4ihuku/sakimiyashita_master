@@ -1850,6 +1850,14 @@ document.getElementById('fetchBtn').addEventListener('click', async()=>{
     const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`);
     const data = await res.json();
     document.getElementById('prevTitle').value = data.title||'';
+    // タイトルから自動タグ付け（既存の入力とは重複なしでマージ）
+    const autoTags = autoTagsFromTitle(data.title||'');
+    if(autoTags.length){
+      const tEl = document.getElementById('prevTags');
+      const cur = tEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+      autoTags.forEach(t=>{ if(!cur.includes(t)) cur.push(t); });
+      tEl.value = cur.join(', ');
+    }
   } catch(e){ document.getElementById('prevTitle').value=''; }
   // 日付欄が空なら自動入力：APIキーがあれば実際の公開日、なければ今日の日付
   const dEl = document.getElementById('prevDate');
@@ -1863,6 +1871,20 @@ function localISODate(n){
   return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
 }
 function todayLocalISO(){ return localISODate(new Date()); }
+
+/* タイトルから自動タグを抽出：
+   ・《ゲーム名 #02》→「ゲーム名」（#以降の回数表記を除去）
+   ・「宮下早紀のStreaming Club」を含むタイトル →「宮下SC」 */
+function autoTagsFromTitle(title){
+  const tags = [];
+  const m = title.match(/《([^》]+)》/);
+  if(m){
+    const game = m[1].replace(/\s*#.*$/, '').trim();
+    if(game) tags.push(game);
+  }
+  if(title.includes('宮下早紀のStreaming Club')) tags.push('宮下SC');
+  return tags;
+}
 
 /* ══════════════════════════════
    YouTube Data API：動画の実際の公開日を取得
